@@ -82,6 +82,28 @@ def store_private_message(message: discord.Message):
     session.close()
 
 
+def store_private_message_edit(before: discord.Message, after: discord.Message):
+    session = DBSession()
+    if not session.query(exists().where(db.PrivateMessage.id == before.id)).scalar():
+        store_private_message(before)
+
+    if before.content == after.content:
+        store_content = None
+    else:
+        store_content = after.content
+
+    if before.embed == after.embed:
+        store_embed = None
+    else:
+        store_embed = get_rich_embed(after)
+
+    new_message_edit = db.PrivateMessageEdit(message_id=after.id, content=store_content, embed=store_embed,
+                                             edit_time=after.edited_at)
+    session.merge(new_message_edit)
+    session.commit()
+    session.close()
+
+
 print_initial_info()
 
 client = discord.Client()
@@ -92,6 +114,14 @@ async def on_message(message):
     if isinstance(message.channel, discord.DMChannel):
         store_private_message(message)
     elif isinstance(message.channel, discord.TextChannel):
+        pass
+
+
+@client.event
+async def on_message_edit(before, after):
+    if isinstance(after.channel, discord.DMChannel):
+        store_private_message_edit(before, after)
+    elif isinstance(after.channel, discord.TextChannel):
         pass
 
 client.run(config["token"], bot=config["bot"])
