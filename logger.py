@@ -139,6 +139,18 @@ def remove_dm_pin(pin_id: int):
     session.commit()
     session.close()
 
+
+def delete_private_message(message):
+    session = DBSession()
+    if not session.query(exists().where(db.PrivateMessage.id == message.id)).scalar():
+        store_private_message(message)
+
+    new_delete = db.PrivateMessageDeletion(message_id=message.id, deletion_time=datetime.datetime.now())
+    session.merge(new_delete)
+    session.commit()
+    session.close()
+
+
 print_initial_info()
 
 client = discord.Client()
@@ -157,6 +169,14 @@ async def on_message_edit(before, after):
     if isinstance(after.channel, discord.DMChannel):
         store_private_message_edit(before, after)
     elif isinstance(after.channel, discord.TextChannel):
+        pass
+
+
+@client.event
+async def on_message_delete(message):
+    if isinstance(message.channel, discord.DMChannel):
+        delete_private_message(message)
+    elif isinstance(message.channel, discord.TextChannel):
         pass
 
 
