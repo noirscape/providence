@@ -73,6 +73,11 @@ def store_private_message(message: discord.Message):
     new_message = db.PrivateMessage(id=message.id, channel_id=message.channel.id, author_id=message.author.id,
                                     content=message.content, embed=get_rich_embed(message), created_at=message.created_at)
     session.merge(new_message)
+    for attachment in message.attachments:
+        new_attachment = db.PrivateMessageAttachments(attachment_id=attachment.id, message_id=message.id,
+                                                      filename=attachment.filename, url=attachment.url,
+                                                      filesize=attachment.filesize)
+        session.merge(new_attachment)
     session.commit()
     session.close()
 
