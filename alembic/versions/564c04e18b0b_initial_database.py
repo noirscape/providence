@@ -1,8 +1,8 @@
 """Initial database
 
-Revision ID: 6345c5ba8486
+Revision ID: 564c04e18b0b
 Revises: 
-Create Date: 2019-03-17 17:58:14.168139
+Create Date: 2019-03-17 19:49:58.235517
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '6345c5ba8486'
+revision = '564c04e18b0b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -93,7 +93,7 @@ def upgrade():
     sa.Column('last_updated', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['guild_id'], ['guilds.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('user_id', 'guild_id'),
+    sa.PrimaryKeyConstraint('user_id', 'guild_id', 'id'),
     sa.UniqueConstraint('id')
     )
     op.create_table('roles',
@@ -241,7 +241,7 @@ def upgrade():
     sa.Column('message_id', sa.BigInteger(), nullable=False),
     sa.Column('content', sa.String(length=2000), nullable=True),
     sa.Column('embed', sa.JSON(), nullable=True),
-    sa.Column('edit_time', sa.BigInteger(), nullable=False),
+    sa.Column('edit_time', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['message_id'], ['guild_messages.id'], ),
     sa.PrimaryKeyConstraint('edit_id')
     )

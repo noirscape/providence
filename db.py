@@ -29,7 +29,7 @@ class GuildMessageEdit(Base):
     message_id = Column(BigInteger, ForeignKey("guild_messages.id"), nullable=False)
     content = Column(String(MAX_MESSAGE_LENGTH))
     embed = Column(JSON)
-    edit_time = Column(BigInteger, nullable=False)
+    edit_time = Column(DateTime, nullable=False)
 
 
 class GuildMessageDeletion(Base):
@@ -179,7 +179,7 @@ class GuildMember(Base):
     __tablename__ = "guild_members"
     user_id = Column(BigInteger, ForeignKey("users.id"), primary_key=True)
     guild_id = Column(BigInteger, ForeignKey("guilds.id"), primary_key=True)
-    id = Column(BigInteger, autoincrement=True, nullable=False, unique=True)
+    id = Column(BigInteger, autoincrement=True, primary_key=True, unique=True)
     nickname = Column(String(MAX_USERNAME_LENGTH))
     last_updated = Column(DateTime, nullable=False)
 

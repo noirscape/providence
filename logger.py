@@ -140,12 +140,103 @@ def remove_dm_pin(pin_id: int):
     session.close()
 
 
-def delete_private_message(message):
+def delete_private_message(message: discord.Message):
     session = DBSession()
     if not session.query(exists().where(db.PrivateMessage.id == message.id)).scalar():
         store_private_message(message)
 
     new_delete = db.PrivateMessageDeletion(message_id=message.id, deletion_time=datetime.datetime.now())
+    session.merge(new_delete)
+    session.commit()
+    session.close()
+
+
+def create_member(user: discord.Member):
+    session = DBSession()
+    if not session.query(exists().where(db.User.id == user.id)).scalar():
+        create_user(user)
+    if not session.query(exists().where(db.Guild.id == channel.guild.id)).scalar():
+        create_guild(user.guild)
+    new_member = db.GuildMember(user_id=user.id, guild_id=user.guild.id, nickname=user.nick,
+                                last_updated=datetime.datetime.now())
+    session.merge(new_member)
+    session.commit()
+    session.close()
+
+
+def create_guild(guild: discord.Guild):
+    session = DBSession()
+    if not session.query(exists().where(and_(db.GuildMember.user_id == guild.owner_id,
+                                             db.GuildMember.guild_id == guild.id))).scalar():
+        create_user(guild.owner)
+    new_guild = db.Guild(id=guild.id, name=guild.name, icon_url=guild.icon_url, owner_id=guild.owner_id,
+                         created_at=guild.created_at, last_updated=datetime.datetime.now())
+    session.merge(new_guild)
+    session.commit()
+    session.close()
+
+
+def create_guild_channel(channel: discord.TextChannel):
+    session = DBSession()
+    if not session.query(exists().where(db.Guild.id == channel.guild.id)).scalar():
+        create_guild(channel.guild)
+    new_guild_channel = db.GuildChannel(id=channel.id, guild_id=channel.guild.id, name=channel.name, topic=channel.topic,
+                                        created_at=channel.created_at, last_updated=datetime.datetime.now())
+    session.merge(new_guild_channel)
+    session.commit()
+    session.close()
+
+
+def store_guild_message(message: discord.Message):
+    session = DBSession()
+    if not session.query(exists().where(db.User.id == message.author.id)).scalar():
+        create_member(message.author)
+        session.close()
+        session = DBSession()
+    if not session.query(exists().where(db.DMChannel.id == message.channel.id)).scalar():
+        create_guild_channel(message.channel)
+        session.close()
+        session = DBSession()
+    new_message = db.GuildMessage(id=message.id, channel_id=message.channel.id, author_id=message.author.id,
+                                  content=message.content, embed=get_rich_embed(message), created_at=message.created_at)
+    session.merge(new_message)
+    for attachment in message.attachments:
+        new_attachment = db.GuildMessageAttachments(attachment_id=attachment.id, message_id=message.id,
+                                                    filename=attachment.filename, url=attachment.url,
+                                                    filesize=attachment.filesize)
+        session.merge(new_attachment)
+    session.commit()
+    session.close()
+
+
+def store_guild_message_edit(before: discord.Message, after: discord.Message):
+    session = DBSession()
+    if not session.query(exists().where(db.GuildMessage.id == before.id)).scalar():
+        store_guild_message(before)
+
+    if before.content == after.content:
+        store_content = None
+    else:
+        store_content = after.content
+
+    if get_rich_embed(before) == get_rich_embed(after):
+        store_embed = None
+    else:
+        store_embed = get_rich_embed(after)
+
+    new_message_edit = db.GuildMessageEdit(message_id=after.id, content=store_content, embed=store_embed,
+                                             edit_time=after.edited_at)
+    session.merge(new_message_edit)
+    session.commit()
+    session.close()
+
+
+def delete_guild_message(message: discord.Message):
+    session = DBSession()
+    if not session.query(exists().where(db.GuildMessage.id == message.id)).scalar():
+        store_guild_message(message)
+
+    new_delete = db.GuildMessageDeletion(message_id=message.id, deletion_time=datetime.datetime.now())
     session.merge(new_delete)
     session.commit()
     session.close()
@@ -161,7 +252,7 @@ async def on_message(message):
     if isinstance(message.channel, discord.DMChannel):
         store_private_message(message)
     elif isinstance(message.channel, discord.TextChannel):
-        pass
+        store_guild_message(message)
 
 
 @client.event
@@ -169,7 +260,7 @@ async def on_message_edit(before, after):
     if isinstance(after.channel, discord.DMChannel):
         store_private_message_edit(before, after)
     elif isinstance(after.channel, discord.TextChannel):
-        pass
+        store_guild_message_edit(before, after)
 
 
 @client.event
@@ -177,7 +268,7 @@ async def on_message_delete(message):
     if isinstance(message.channel, discord.DMChannel):
         delete_private_message(message)
     elif isinstance(message.channel, discord.TextChannel):
-        pass
+        delete_guild_message(message)
 
 
 @client.event
