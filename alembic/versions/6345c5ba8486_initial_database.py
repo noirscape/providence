@@ -1,8 +1,8 @@
 """Initial database
 
-Revision ID: 90343048dc0a
+Revision ID: 6345c5ba8486
 Revises: 
-Create Date: 2019-03-17 16:51:22.161049
+Create Date: 2019-03-17 17:58:14.168139
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '90343048dc0a'
+revision = '6345c5ba8486'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -113,6 +113,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('audit_id')
     )
     op.create_table('dm_channel_pins',
+    sa.Column('pin_id', sa.BigInteger(), autoincrement=True, nullable=False),
     sa.Column('dm_channel_id', sa.BigInteger(), nullable=False),
     sa.Column('message_id', sa.BigInteger(), nullable=False),
     sa.Column('is_pinned', sa.Boolean(), nullable=False),
@@ -120,7 +121,7 @@ def upgrade():
     sa.Column('unpinned_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['dm_channel_id'], ['dm_channels.id'], ),
     sa.ForeignKeyConstraint(['message_id'], ['dm_messages.id'], ),
-    sa.PrimaryKeyConstraint('message_id')
+    sa.PrimaryKeyConstraint('pin_id')
     )
     op.create_table('dm_message_attachments',
     sa.Column('attachment_id', sa.BigInteger(), nullable=False),
@@ -210,6 +211,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('edit_id')
     )
     op.create_table('guild_channel_pins',
+    sa.Column('pin_id', sa.BigInteger(), autoincrement=True, nullable=False),
     sa.Column('guild_channel_id', sa.BigInteger(), nullable=False),
     sa.Column('message_id', sa.BigInteger(), nullable=False),
     sa.Column('is_pinned', sa.Boolean(), nullable=False),
@@ -217,7 +219,7 @@ def upgrade():
     sa.Column('unpinned_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['guild_channel_id'], ['guild_channels.id'], ),
     sa.ForeignKeyConstraint(['message_id'], ['guild_messages.id'], ),
-    sa.PrimaryKeyConstraint('message_id')
+    sa.PrimaryKeyConstraint('pin_id')
     )
     op.create_table('guild_message_attachments',
     sa.Column('attachment_id', sa.BigInteger(), nullable=False),

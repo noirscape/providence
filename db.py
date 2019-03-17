@@ -128,8 +128,9 @@ class GuildChannelEdit(Base):
 
 class GuildChannelPins(Base):
     __tablename__ = "guild_channel_pins"
+    pin_id = Column(BigInteger, primary_key=True, autoincrement=True)
     guild_channel_id = Column(BigInteger, ForeignKey("guild_channels.id"), nullable=False)
-    message_id = Column(BigInteger, ForeignKey("guild_messages.id"), nullable=False, primary_key=True)
+    message_id = Column(BigInteger, ForeignKey("guild_messages.id"), nullable=False)
     is_pinned = Column(Boolean, nullable=False)
     pinned_at = Column(DateTime, nullable=False)
     unpinned_at = Column(DateTime)
@@ -143,8 +144,9 @@ class DMChannel(Base):
 
 class DMChannelPins(Base):
     __tablename__ = "dm_channel_pins"
+    pin_id = Column(BigInteger, primary_key=True, autoincrement=True)
     dm_channel_id = Column(BigInteger, ForeignKey("dm_channels.id"), nullable=False)
-    message_id = Column(BigInteger, ForeignKey("dm_messages.id"), nullable=False, primary_key=True)
+    message_id = Column(BigInteger, ForeignKey("dm_messages.id"), nullable=False)
     is_pinned = Column(Boolean, nullable=False)
     pinned_at = Column(DateTime, nullable=False)
     unpinned_at = Column(DateTime)

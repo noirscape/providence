@@ -1,6 +1,6 @@
 import discord
 import yaml
-from sqlalchemy import create_engine, exists
+from sqlalchemy import create_engine, exists, and_
 from sqlalchemy.orm import sessionmaker
 import db
 import datetime
@@ -92,7 +92,7 @@ def store_private_message_edit(before: discord.Message, after: discord.Message):
     else:
         store_content = after.content
 
-    if before.embed == after.embed:
+    if get_rich_embed(before) == get_rich_embed(after):
         store_embed = None
     else:
         store_embed = get_rich_embed(after)
@@ -103,6 +103,41 @@ def store_private_message_edit(before: discord.Message, after: discord.Message):
     session.commit()
     session.close()
 
+
+def update_private_pin(message: discord.Message):
+    session = DBSession()
+    if session.query(exists().where(and_(db.DMChannelPins.message_id == message.id, db.DMChannelPins.is_pinned == True))
+                     ).scalar():
+        pass
+    else:
+        if not session.query(exists().where(db.PrivateMessage.id == message.id)).scalar():
+            store_private_message(message)
+        new_pin = db.DMChannelPins(dm_channel_id=message.channel.id, message_id=message.id, is_pinned=True,
+                                   pinned_at=datetime.datetime.now())
+        session.add(new_pin)
+    session.commit()
+    session.close()
+
+
+def get_all_dm_pins(channel: discord.DMChannel) -> list:
+    session = DBSession()
+    pin_list = []
+    for result in session.query(db.DMChannelPins).filter_by(dm_channel_id=channel.id):
+        pin_list.append((result.message_id, result.pin_id))
+    session.commit()
+    session.close()
+    return pin_list
+
+
+def remove_dm_pin(pin_id: int):
+    session = DBSession()
+    pin = session.query(db.DMChannelPins).filter_by(pin_id=pin_id).one()
+    if pin.is_pinned:
+        pin.is_pinned = False
+        pin.unpinned_at = datetime.datetime.now()
+    session.merge(pin)
+    session.commit()
+    session.close()
 
 print_initial_info()
 
@@ -123,5 +158,22 @@ async def on_message_edit(before, after):
         store_private_message_edit(before, after)
     elif isinstance(after.channel, discord.TextChannel):
         pass
+
+
+@client.event
+async def on_private_channel_pins_update(channel, _):
+    pins = await channel.pins()
+    current_pins = []
+    for message in pins:
+        update_private_pin(message)
+        current_pins.append(message.id)
+
+    all_pins = get_all_dm_pins(channel)
+    loopable_all_pins = [x[0] for x in all_pins]
+
+    for idx, pin in enumerate(loopable_all_pins):
+        if pin not in current_pins:
+            remove_dm_pin(all_pins[idx][1])
+
 
 client.run(config["token"], bot=config["bot"])
