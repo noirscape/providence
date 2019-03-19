@@ -13,7 +13,7 @@
             </div>
             <div class="mdl-card__supporting-text">
                 ID: {{ guild.id }}<br>
-                Guild owner: {{ guild.owner_id }}
+                Guild owner: <a href="/users/{{ guild.owner.id }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a>
             </div>
             <div class="mdl-card__actions mdl-card--border">
                 <a class="mdl-button mdl-button--accent mdl-js-button mdl-js-ripple-effect"
