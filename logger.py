@@ -76,7 +76,7 @@ def store_private_message(message: discord.Message):
     for attachment in message.attachments:
         new_attachment = db.PrivateMessageAttachments(attachment_id=attachment.id, message_id=message.id,
                                                       filename=attachment.filename, url=attachment.url,
-                                                      filesize=attachment.filesize)
+                                                      filesize=attachment.size)
         session.merge(new_attachment)
     session.commit()
     session.close()
@@ -155,7 +155,7 @@ def create_member(user: discord.Member):
     session = DBSession()
     if not session.query(exists().where(db.User.id == user.id)).scalar():
         create_user(user)
-    if not session.query(exists().where(db.Guild.id == channel.guild.id)).scalar():
+    if not session.query(exists().where(db.Guild.id == user.guild.id)).scalar():
         create_guild(user.guild)
     new_member = db.GuildMember(user_id=user.id, guild_id=user.guild.id, nickname=user.nick,
                                 last_updated=datetime.datetime.now())
@@ -203,7 +203,7 @@ def store_guild_message(message: discord.Message):
     for attachment in message.attachments:
         new_attachment = db.GuildMessageAttachments(attachment_id=attachment.id, message_id=message.id,
                                                     filename=attachment.filename, url=attachment.url,
-                                                    filesize=attachment.filesize)
+                                                    filesize=attachment.size)
         session.merge(new_attachment)
     session.commit()
     session.close()
@@ -225,7 +225,7 @@ def store_guild_message_edit(before: discord.Message, after: discord.Message):
         store_embed = get_rich_embed(after)
 
     new_message_edit = db.GuildMessageEdit(message_id=after.id, content=store_content, embed=store_embed,
-                                             edit_time=after.edited_at)
+                                           edit_time=after.edited_at)
     session.merge(new_message_edit)
     session.commit()
     session.close()
@@ -257,6 +257,9 @@ async def on_message(message):
 
 @client.event
 async def on_message_edit(before, after):
+    if not after.edited_at: # Apparently embed expansions trigger edits, but embed expansions dont set the edit date,
+                            # ergo embed expansions arent edits
+        return
     if isinstance(after.channel, discord.DMChannel):
         store_private_message_edit(before, after)
     elif isinstance(after.channel, discord.TextChannel):

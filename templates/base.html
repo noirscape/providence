@@ -1,0 +1,31 @@
+{% macro create_title() %}
+{% block title %}{% endblock %}
+{% endmacro %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Providence</title>
+    <link rel="stylesheet" href="/static/material.min.css">
+    <script src="/static/material.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+        <div class="mdl-layout-icon"></div>
+        <div class="mdl-layout__header-row">
+            <span class="mdl-layout__title">Providence - {{ create_title() }}</span>
+            <div class="mdl-layout-spacer"></div>
+        </div>
+    </header>
+    <div class="mdl-layout__drawer">
+        <span class="mdl-layout__title">Providence - {{ create_title() }}</span>
+    </div>
+    <main class="mdl-layout__content">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+</body>
+</html>
