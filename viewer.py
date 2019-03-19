@@ -20,6 +20,11 @@ db_session = scoped_session(sessionmaker(autocommit=False,
 db.Base.query = db_session.query_property()
 
 
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove()
+
+
 @app.route('/')
 @app.route('/guilds/')
 def list_all_guilds():
@@ -29,7 +34,8 @@ def list_all_guilds():
 
 @app.route('/guilds/<guild_id>/')
 def list_guild_channels(guild_id):
-    channels = db_session.query(db.GuildChannel).filter_by(guild_id=guild_id).order_by(db.GuildChannel.created_at.asc()).all()
+    channels = db_session.query(db.GuildChannel).filter_by(guild_id=guild_id).order_by(
+        db.GuildChannel.created_at.asc()).all()
     return render_template("channel_list.html", channels=channels)
 
 
