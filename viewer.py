@@ -39,5 +39,12 @@ def list_guild_channels(guild_id):
     return render_template("channel_list.html", channels=channels)
 
 
+@app.route('/users/<user_id>')
+def show_single_user(user_id):
+    user = db_session.query(db.User).filter_by(id=user_id).one()
+    members = db_session.query(db.GuildMember).filter_by(user_id=user_id).all()
+    return render_template("user_details.html", user=user, members=members)
+
+
 if __name__ == '__main__':
     app.run()

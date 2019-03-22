@@ -16,7 +16,7 @@ current_path = os.path.dirname(os.path.abspath(__file__))
 ROOT_PATH = os.path.join(current_path, '..')
 sys.path.append(ROOT_PATH)
 
-from database.db import Base
+from db import Base
 target_metadata = Base.metadata
 
 ###

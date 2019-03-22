@@ -23,7 +23,8 @@
   - [ ] Date/time per channel
   - [ ] Messages per day
     - [ ] Export as panopticon logs
-  - [ ] User overview
+  - [x] User overview
+    - [ ] User guild history
   - [ ] Role details
   - [ ] Search function
   
