@@ -58,4 +58,20 @@ async def on_private_channel_pins_update(channel, _):
             remove_dm_pin(all_pins[idx][1])
 
 
+@client.event
+async def on_guild_channel_pins_update(channel, _):
+    pins = await channel.pins()
+    current_pins = []
+    for message in pins:
+        update_guild_channel_pin(message)
+        current_pins.append(message.id)
+
+    all_pins = get_all_guild_channel_pins(channel)
+    loopable_all_pins = [x[0] for x in all_pins]
+
+    for idx, pin in enumerate(loopable_all_pins):
+        if pin not in current_pins:
+            remove_guild_channel_pin(all_pins[idx][1])
+
+
 client.run(config["token"], bot=config["bot"])

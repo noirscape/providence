@@ -291,3 +291,39 @@ def delete_guild_message(message: discord.Message):
     session.merge(new_delete)
     session.commit()
     session.close()
+
+
+def get_all_guild_channel_pins(channel: discord.TextChannel) -> list:
+    session = DBSession()
+    pin_list = []
+    for result in session.query(db.GuildChannel).filter_by(id=channel.id):
+        pin_list.append((result.message_id, result.pin_id))
+    session.commit()
+    session.close()
+    return pin_list
+
+
+def remove_guild_channel_pin(pin_id: int):
+    session = DBSession()
+    pin = session.query(db.GuildChannelPins).filter_by(pin_id=pin_id).one()
+    if pin.is_pinned:
+        pin.is_pinned = False
+        pin.unpinned_at = datetime.datetime.now()
+    session.merge(pin)
+    session.commit()
+    session.close()
+
+
+def update_guild_channel_pin(message: discord.Message):
+    session = DBSession()
+    if session.query(exists().where(and_(db.GuildChannelPins.message_id == message.id, db.GuildChannelPins.is_pinned == True))
+                     ).scalar():
+        pass
+    else:
+        if not session.query(exists().where(db.GuildMessage.id == message.id)).scalar():
+            store_private_message(message)
+        new_pin = db.GuildChannelPins(dm_channel_id=message.channel.id, message_id=message.id, is_pinned=True,
+                                   pinned_at=datetime.datetime.now())
+        session.add(new_pin)
+    session.commit()
+    session.close()

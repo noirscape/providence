@@ -1,5 +1,5 @@
 - [ ] Logger
-  - [x] Private messages
+  - [ ] Private messages
     - [x] Log new messages
     - [x] Log edits to messages
     - [x] Log pins in channel
@@ -7,7 +7,7 @@
   - [ ] Guild messages
     - [x] Log new messages
     - [x] Log edits to messages
-    - [ ] Log pins in channel
+    - [x] Log pins in channel
     - [ ] Log reactions to messages
    - [ ] Log channel changes
    - [ ] Log guild changes
@@ -24,7 +24,7 @@
   - [x] Channel list
   - [ ] Channel info
   - [x] Date/time per channel
-  - [x] Messages per day
+  - [ ] Messages per day
     - [x] Message content
     - [x] Attachments
     - [ ] Reactions
