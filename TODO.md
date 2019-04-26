@@ -18,7 +18,7 @@
   - [ ] Log old/existing messages
 - [ ] Viewer
   - [x] Template
-  - [ ] DM list
+  - [x] DM list
   - [x] Guild overview
   - [ ] Guild details
   - [x] Channel list
@@ -34,13 +34,12 @@
     - [ ] User guild history
   - [ ] Role details
   - [ ] Search function
-- [x] Localize attachments
-- [x] Localize user icons
-  
+
 Optional features:
 
 If implemented, these should be toggleable due to storage concerns.
-
+- [x] Localize attachments
+- [x] Localize user icons
 
 Deployment things:
 

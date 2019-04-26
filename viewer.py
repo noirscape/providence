@@ -22,6 +22,48 @@ db_session = scoped_session(sessionmaker(autocommit=False,
 db.Base.query = db_session.query_property()
 
 
+def process_messages(message_cls, attachment_cls, edit_cls, channel_id, date):
+    date = datetime.strptime(date, "%Y-%m-%d")
+
+    r_image = re.compile(r".*\.(jpg|jpeg|png|gif|webp)$")
+
+    all_messages = db_session.query(message_cls).filter(message_cls.channel_id == channel_id).all()
+    all_messages = [x for x in all_messages if x.created_at.date() == date.date()]
+
+    all_messages.sort(key=lambda message: message.created_at)
+
+    for message in all_messages:
+        edit_list = db_session.query(edit_cls).filter_by(message_id=message.id).all()
+        edit_list.sort(key=lambda edit: edit.edit_time)
+        message.edits = edit_list
+        message.real_content = message.content if len(edit_list) == 0 else message.edits[-1].content
+
+        attachment_list = db_session.query(attachment_cls).filter_by(message_id=message.id).all()
+        message.attachments = attachment_list
+
+        for attachment in message.attachments:
+            attachment.is_image = r_image.match(attachment.url)
+
+    return all_messages[0].channel, all_messages
+
+
+def request_days(message_cls, channel_id):
+    all_messages = db_session.query(message_cls).filter_by(channel_id=channel_id).all()
+
+    # This should probably be a part of the query lol
+    days = []
+    prev_day = None
+    for message in all_messages:
+        if prev_day is None:
+            days.append(message.created_at.date())
+            prev_day = message.created_at
+            continue
+        if prev_day.date() != message.created_at.date():
+            prev_day = message.created_at
+            days.append(message.created_at.date())
+
+    return all_messages[0].channel, days
+
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db_session.remove()
@@ -41,57 +83,44 @@ def list_guild_channels(guild_id):
     return render_template("channel_list.html", channels=channels)
 
 
-@app.route('/users/<user_id>')
+@app.route('/users/<user_id>/')
 def show_single_user(user_id):
     user = db_session.query(db.User).filter_by(id=user_id).one()
     members = db_session.query(db.GuildMember).filter_by(user_id=user_id).all()
     return render_template("user_details.html", user=user, members=members)
 
 
-@app.route('/channels/<channel_id>')
+@app.route('/channels/<channel_id>/')
 def list_all_logged_days_for_channel(channel_id):
-    all_messages = db_session.query(db.GuildMessage).filter_by(channel_id=channel_id).all()
+    channel, days = request_days(db.GuildMessage, channel_id)
 
-    # This should probably be a part of the query lol
-    days = []
-    prev_day = None
-    for message in all_messages:
-        if prev_day is None:
-            days.append(message.created_at.date())
-            prev_day = message.created_at
-            continue
-        if prev_day.date() != message.created_at.date():
-            prev_day = message.created_at
-            days.append(message.created_at.date())
-
-    return render_template("days_list.html", channel=all_messages[0].channel, days=days)
+    return render_template("guild_days_list.html", channel=channel, days=days)
 
 
 @app.route('/channels/<channel_id>/<date>')
 def list_all_messages_per_day(channel_id, date):
-    date = datetime.strptime(date, "%Y-%m-%d")
+    channel, messages = process_messages(db.GuildMessage, db.GuildMessageAttachments, db.GuildMessageEdit, channel_id, date)
 
-    r_image = re.compile(r".*\.(jpg|jpeg|png|gif|webp)$")
+    return render_template("messages.html", channel=channel, messages=messages, message_length=len(messages))
 
-    all_messages = db_session.query(db.GuildMessage).filter(db.GuildMessage.channel_id == channel_id).all()
-    all_messages = [x for x in all_messages if x.created_at.date() == date.date()]
+@app.route('/dms/')
+def list_all_dms():
+    all_dms = db_session.query(db.DMChannel).all()
+    return render_template("dm_list.html", dms=all_dms)
 
-    all_messages.sort(key=lambda message: message.created_at)
 
-    for message in all_messages:
-        edit_list = db_session.query(db.GuildMessageEdit).filter_by(message_id=message.id).all()
-        edit_list.sort(key=lambda edit: edit.edit_time)
-        message.edits = edit_list
-        message.real_content = message.content if len(edit_list) == 0 else message.edits[-1].content
+@app.route('/dms/<dm_id>/')
+def list_all_logged_days_for_dm(dm_id):
+    channel, days = request_days(db.PrivateMessage, dm_id)
+    return render_template("dm_days_list.html", channel=channel, days=days)
 
-        attachment_list = db_session.query(db.GuildMessageAttachments).filter_by(message_id=message.id).all()
-        message.attachments = attachment_list
 
-        for attachment in message.attachments:
-            attachment.is_image = r_image.match(attachment.url)
-        
+@app.route('/dms/<dm_id>/<date>')
+def list_all_dms_per_day(dm_id, date):
+    channel, messages = process_messages(db.PrivateMessage, db.PrivateMessageAttachments, db.PrivateMessageEdit, dm_id, date)
+    channel.guild = channel.remote_user # STUPID AND HACKY BUT IT WORKS!
 
-    return render_template("messages.html", channel=all_messages[0].channel, messages=all_messages, message_length=len(all_messages))
+    return render_template("messages.html", channel=channel, messages=messages, message_length=len(messages))
 
 
 if __name__ == '__main__':
