@@ -15,6 +15,7 @@
    - [ ] Log user updates
      - [ ] Log role additions
      - [ ] Log role removals
+  - [ ] Log old/existing messages
 - [ ] Viewer
   - [x] Template
   - [ ] DM list
@@ -24,6 +25,8 @@
   - [ ] Channel info
   - [x] Date/time per channel
   - [x] Messages per day
+    - [x] Message content
+    - [x] Attachments
     - [ ] Reactions
     - [ ] Embeds
     - [ ] Export as panopticon logs
@@ -31,13 +34,13 @@
     - [ ] User guild history
   - [ ] Role details
   - [ ] Search function
+- [x] Localize attachments
+- [x] Localize user icons
   
 Optional features:
 
 If implemented, these should be toggleable due to storage concerns.
 
-- [ ] Localize attachments
-- [ ] Localize user icons
 
 Deployment things:
 
