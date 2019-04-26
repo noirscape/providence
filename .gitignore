@@ -130,3 +130,7 @@ erd.png
 
 # Config
 config.yml
+
+# Static stuff
+static/attachments
+static/avatars

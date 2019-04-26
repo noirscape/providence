@@ -5,11 +5,14 @@ from sqlalchemy.orm import sessionmaker
 import db
 import datetime
 import json
+import os
+import requests
+import shutil
 
 print("Starting Providence...")
 
 with open("config.yml") as configfile:
-    config = yaml.load(configfile)
+    config = yaml.safe_load(configfile)
 
 print("Read config.")
 
@@ -28,6 +31,13 @@ def print_initial_info():
     session.close()
 
 
+def make_static_dirs():
+    if config["local_avatars"]:
+        os.makedirs("static/avatars", exist_ok=True)
+    if config["local_attachments"]:
+        os.makedirs("static/attachments", exist_ok=True)
+
+
 def get_rich_embed(message: discord.Message):
     if message.embeds:
         for e in message.embeds:  # type: discord.Embed
@@ -40,8 +50,16 @@ def get_rich_embed(message: discord.Message):
 
 
 def create_user(user: discord.User):
+    if config["local_avatars"]:
+        r = requests.get(user.avatar_url_as(format='png'))
+        with open(f"static/avatars/{user.id}.png", 'wb') as avatarfile:
+            avatarfile.write(r.content)
+        avatar_url = f"/static/avatars/{user.id}.png"
+    else:
+        avatar_url = str(user.avatar_url)
+
     new_user = db.User(id=user.id, name=user.name, discriminator=user.discriminator, is_bot=user.bot,
-                       avatar=user.avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now())
+                       avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now())
     session = DBSession()
     session.merge(new_user)
     session.commit()
@@ -71,12 +89,12 @@ def store_private_message(message: discord.Message):
         session.close()
         session = DBSession()
     new_message = db.PrivateMessage(id=message.id, channel_id=message.channel.id, author_id=message.author.id,
-                                    content=message.content, embed=get_rich_embed(message),
+                                    content=message.clean_content, embed=get_rich_embed(message),
                                     created_at=message.created_at)
     session.merge(new_message)
     for attachment in message.attachments:
         new_attachment = db.PrivateMessageAttachments(attachment_id=attachment.id, message_id=message.id,
-                                                      filename=attachment.filename, url=attachment.url,
+                                                      filename=attachment.filename, url=str(attachment.url),
                                                       filesize=attachment.size)
         session.merge(new_attachment)
     session.commit()
@@ -181,7 +199,7 @@ def create_guild(guild: discord.Guild):
         create_user(guild.owner)
         session.close()
         session = DBSession()
-    new_guild = db.Guild(id=guild.id, name=guild.name, icon_url=guild.icon_url, owner_id=guild.owner_id,
+    new_guild = db.Guild(id=guild.id, name=guild.name, icon_url=str(guild.icon_url), owner_id=guild.owner_id,
                          created_at=guild.created_at, last_updated=datetime.datetime.now())
     session.merge(new_guild)
     session.commit()
@@ -220,11 +238,11 @@ def store_guild_message(message: discord.Message):
         session.close()
         session = DBSession()
     new_message = db.GuildMessage(id=message.id, channel_id=message.channel.id, author_id=message.author.id,
-                                  content=message.content, embed=get_rich_embed(message), created_at=message.created_at)
+                                  content=message.clean_content, embed=get_rich_embed(message), created_at=message.created_at)
     session.merge(new_message)
     for attachment in message.attachments:
         new_attachment = db.GuildMessageAttachments(attachment_id=attachment.id, message_id=message.id,
-                                                    filename=attachment.filename, url=attachment.url,
+                                                    filename=attachment.filename, url=str(attachment.url),
                                                     filesize=attachment.size)
         session.merge(new_attachment)
     session.commit()
@@ -239,7 +257,7 @@ def store_guild_message_edit(before: discord.Message, after: discord.Message):
     if before.content == after.content:
         store_content = None
     else:
-        store_content = after.content
+        store_content = after.clean_content
 
     if get_rich_embed(before) == get_rich_embed(after):
         store_embed = None
@@ -265,7 +283,7 @@ def delete_guild_message(message: discord.Message):
 
 
 print_initial_info()
-
+make_static_dirs()
 client = discord.Client()
 
 

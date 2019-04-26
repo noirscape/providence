@@ -3,10 +3,12 @@
     - [x] Log new messages
     - [x] Log edits to messages
     - [x] Log pins in channel
+    - [ ] Log reactions to messages
   - [ ] Guild messages
     - [x] Log new messages
     - [x] Log edits to messages
     - [ ] Log pins in channel
+    - [ ] Log reactions to messages
    - [ ] Log channel changes
    - [ ] Log guild changes
    - [ ] Log role changes
@@ -20,8 +22,10 @@
   - [ ] Guild details
   - [x] Channel list
   - [ ] Channel info
-  - [ ] Date/time per channel
-  - [ ] Messages per day
+  - [x] Date/time per channel
+  - [x] Messages per day
+    - [ ] Reactions
+    - [ ] Embeds
     - [ ] Export as panopticon logs
   - [x] User overview
     - [ ] User guild history

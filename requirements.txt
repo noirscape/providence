@@ -1,7 +1,8 @@
-git+https://github.com/Rapptz/discord.py@rewrite
+discord
 flask
 sqlalchemy
 eralchemy
 psycopg2-binary
 alembic
 pyyaml
+requests

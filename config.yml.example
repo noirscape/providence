@@ -1,2 +1,5 @@
 token: ''
 database_url: ''
+bot: False
+local_avatars: False
+local_attachments: False
