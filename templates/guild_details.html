@@ -12,7 +12,8 @@
         <div class="four columns">
             <p>ID: {{ guild.id }}<br>
             Name: {{ guild.name }}<br>
-            Owner: <a href="/users/{{ guild.owner.id }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a></p>
+            Owner: <a href="/users/{{ guild.owner.id }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a><br>
+            Created at: {{ guild.created_at | date }} </p>
         </div>
     </div>    
 </div>
@@ -31,6 +32,26 @@
         <tr>
             <td><a href="/users/{{ membership.user.id }}">{{ membership.user.name }}#{{ '{0:04d}'.format(membership.user.discriminator) }}</a></td>
             <td><a href="/users/{{ membership.user.id }}/{{ guild.id }}">More</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Roles</h3>
+<table class="u-full-width">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Created at</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for role in roles %}
+        <tr>
+            <td>{{ role.name }}</td>
+            <td>{{ role.id }}</td>
+            <td>{{ role.created_at | date }}</td>
         </tr>
         {% endfor %}
     </tbody>

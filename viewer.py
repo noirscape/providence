@@ -126,7 +126,8 @@ def list_guild_channels(guild_id):
 def show_single_guild(guild_id):
     guild = db_session.query(db.Guild).filter_by(id=guild_id).one()
     members = db_session.query(db.GuildMember).filter_by(guild_id=guild_id).all()
-    return render_template("guild_details.html", guild=guild, members=members)
+    roles = db_session.query(db.Role).filter_by(guild_id=guild_id).all()
+    return render_template("guild_details.html", guild=guild, members=members, roles=roles)
 
 
 @app.route('/users/<user_id>/')
