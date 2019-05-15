@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ channel.name }} Days list{% endblock %}
+
+{% block content %}
+<ul>
+    {% for day in days %}
+    <li><a href="{{ day | date }}">{{ day | date }}</a></li>
+    {% endfor %}
+</ul>
+{% endblock %}

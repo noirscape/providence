@@ -3,23 +3,20 @@
 {% block title %}{{ channels[0].guild.name }} - Channel list{% endblock %}
 
 {% block content %}
-    <div class="mdl-grid">
-        <div class="mdl-layout-spacer"></div>
-        <div class="mdl-cell mdl-cell--4-col">
-            <ul class="mdl-list">
-                {% for channel in channels %}
-                    <li class="mdl-list__item mdl-list__item--two-line">
-                    <span class="mdl-list__item-primary-content">
-                        <span><i class="material-icons mdl-list__item-icon">#</i>{{ channel.name }}</span>
-
-                        <span class="mdl-list__item-sub-title">{{ channel.id }}</span>
-                    </span>
-                        <a class="mdl-list__item-secondary-action" href="/channels/{{ channel.id }}/info"><i class="material-icons">info</i></a>
-                        <a class="mdl-list__item-secondary-action" href="/channels/{{ channel.id }}"><i class="material-icons">keyboard_arrow_right</i></a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="mdl-layout-spacer"></div>
-    </div>
+<table class="u-full-width">
+    <thead>
+        <th>Name</th>
+        <th>ID</th>
+        <th>Info</th>
+    </thead>
+    <tbody>
+        {% for channel in channels %}
+        <tr>
+            <td><a href="/channels/{{ channel.id }}">#{{ channel.name }}</a></td>
+            <td>{{ channel.id }}</td>
+            <td><a href="/channels/{{ channel.id }}/info">More</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

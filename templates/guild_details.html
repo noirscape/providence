@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Guild{% endblock %}
+
+{% block content %}
+
+<h3>{{ guild.name }}</h3>
+<div class="row">
+        <div class="three columns">
+            <img class="u-max-full-width" src="{{ guild.icon_url }}" />
+        </div>
+        <div class="four columns">
+            <p>ID: {{ guild.id }}<br>
+            Name: {{ guild.name }}<br>
+            Owner: <a href="/users/{{ guild.owner.id }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a></p>
+        </div>
+    </div>    
+</div>
+
+<h3>Members</h3>
+
+<table class="u-full-width">
+    <thead>
+        <tr>
+            <th>Member</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for membership in members %}
+        <tr>
+            <td><a href="/users/{{ membership.user.id }}">{{ membership.user.name }}#{{ '{0:04d}'.format(membership.user.discriminator) }}</a></td>
+            <td><a href="/users/{{ membership.user.id }}/{{ guild.id }}">More</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

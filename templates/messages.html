@@ -152,6 +152,10 @@ img {
     word-wrap: break-word;
 }
 
+.chatlog__deleted {
+    color: red;
+}
+
 .chatlog__edited-timestamp {
     margin-left: 5px;
     font-size: .8em;
@@ -426,22 +430,23 @@ a {
 </div>
 
 <div class="chatlog">
-    {% for message in messages %}
+    {% for message_group in all_messages_grouped %}
         <div class="chatlog__message-group">
             <!-- Avatar -->
             <div class="chatlog__author-avatar-container">
-                <img class="chatlog__author-avatar" src="{{ message.author.avatar }}" />
+                <img class="chatlog__author-avatar" src="{{ message_group[0].author.avatar }}" />
             </div>
             <!-- Messages in group -->
             <div class="chatlog__messages">
                 <!-- Author and timestamp-->
-                <span class="chatlog__author-name" title="{{ message.author.name }}">
-                    <a href="/users/{{ message.author.id }}" style="color: white;">{{ message.author.name }}</a></span>
-                <span class="chatlog__timestamp">{{ message.created_at }}</span>
+                <span class="chatlog__author-name" title="{{ message_group[0].author.name }}">
+                    <a href="/users/{{ message_group[0].author.id }}" style="color: white;">{{ message_group[0].author.name }}</a></span>
+                <span class="chatlog__timestamp">{{ message_group[0].created_at }}</span>
+                {% for message in message_group %}
 
                 <!-- Content -->
                 {% if message.content %}
-                    <div class="chatlog__content">
+                    <div class="chatlog__content {% if message.deleted %} chatlog__deleted {% endif %}">
                         {{ message.real_content }}
 
                         <!-- Edited timestamp -->
@@ -464,6 +469,131 @@ a {
                     </div>
                 {% endfor %}
 
+                {% if message.embed %}
+                <div class="chatlog__embed">
+                    <div class="chatlog__embed-color-pill" style="background-color: rgba({{ message.embed.color }})"></div>
+                    <div class="chatlog__embed-content-container">
+                        <div class="chatlog__embed-content">
+                            <div class="chatlog__embed-text">
+                                <!-- Author -->
+                                {% if message.embed.author %}
+                                    <div class="chatlog__embed-author">
+                                        {% if message.embed.author.icon_url %}
+                                            <img class="chatlog__embed-author-icon" src="{{ message.embed.author.icon_url }}" />
+                                        {% endif %}
+
+                                        {% if message.embed.author.name %}
+                                            <span class="chatlog__embed-author-name">
+                                                {% if message.embed.author.url %}
+                                                    <a class="chatlog__embed-author-name-link" href="{{ message.embed.author.url }}">{{ message.embed.author.name }}</a>
+                                                {% else %}
+                                                    {{ message.embed.author.name }}
+                                                {% endif %}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Title -->
+                                {% if message.embed.title %}
+                                    <div class="chatlog__embed-title">
+                                        {% if message.embed.url %}
+                                            <a class="chatlog__embed-title-link" href="{{ message.embed.url }}">{{ message.embed.title }}</a>
+                                        {% else %}
+                                            {{ message.embed.title }}
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Description -->
+                                {% if message.embed.description %}
+                                    <div class="chatlog__embed-description">{{ message.embed.description }}</div>
+                                {% endif %}
+
+                                <!-- Fields -->
+                                {% if message.embed.fields | length > 0 %}
+                                    <div class="chatlog__embed-fields">
+                                        {% for field in message.embed.fields %}
+                                            <div class="chatlog__embed-field {% if field.inline %} chatlog__embed-field--inline {% endif %}">
+                                                {% if field.name %}
+                                                    <div class="chatlog__embed-field-name">{{ field.name }}</div>
+                                                {% endif %}
+                                                {% if field.value %}
+                                                    <div class="chatlog__embed-field-value">{{ field.value }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Thumbnail -->
+                            {% if message.embed.thumbnail %}
+                                <div class="chatlog__embed-thumbnail-container">
+                                    <a class="chatlog__embed-thumbnail-link" href="{{ message.embed.thumbnail.url }}">
+                                        <img class="chatlog__embed-thumbnail" src="{{ message.embed.thumbnail.url }}" />
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>    
+
+                        <!-- Image -->
+                        {% if message.embed.image %}
+                            <div class="chatlog__embed-image-container">
+                                <a class="chatlog__embed-image-link" href="{{ message.embed.image.url }}">
+                                    <img class="chatlog__embed-image" src="{{ message.embed.image.url }}" />
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        <!-- Footer -->
+                        {% if message.embed.footer or message.embed.timestamp %}
+                            <div class="chatlog__embed-footer">
+                                {% if message.embed.footer %}
+                                    {% if message.embed.footer.text and message.embed.footer.icon_url %}
+                                        <img class="chatlog__embed-footer-icon" src="{{ message.embed.footer.icon_url }}" />
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <span class="chatlog__embed-footer-text">
+                                    {% if message.embed.footer %}
+                                        {% if message.embed.footer.text %}
+                                            {{ message.embed.footer.text }}
+                                            {% if message.embed.timestamp %} • {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if message.embed.timestamp %}
+                                        {{ message.embed.timestamp }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                <!-- Reactions -->
+                {% if message.reactions | length > 0 %}
+                    <div class="chatlog__reactions">
+                        {% for reaction in message.reactions %}
+                            <div class="chatlog__reaction">
+                                <span class="chatlog__reaction-emoji">
+                                    <!-- Custom emoji -->
+                                    {% if reaction.id %}
+                                        <img class="emoji emoji--small" title="{{ reaction.name }}" src="https://cdn.discordapp.com/emojis/{{ reaction.id }}.png" />
+                                    <!-- Default emoji -->
+                                    {% else %}
+                                        {{ reaction.name }}
+                                    {% endif %}
+                                </span>
+                                <span class="chatlog__reaction-count">{{ reaction.Count }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                </div>
+            {% endif %}
+            {% endfor %}
             </div>
         </div>
     {% endfor %}

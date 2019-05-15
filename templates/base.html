@@ -5,27 +5,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Providence</title>
-    <link rel="stylesheet" href="/static/mdl/material.min.css">
-    <script src="/static/mdl/material.min.js"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <title>Providence - {{ create_title() }}</title>
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="/static/normalize.css">
+  <link rel="stylesheet" href="/static/skeleton.css">
+  <link rel="stylesheet" href="/static/bonus.css">
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+
 </head>
 <body>
-<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-    <header class="mdl-layout__header">
-        <div class="mdl-layout-icon"></div>
-        <div class="mdl-layout__header-row">
-            <span class="mdl-layout__title">Providence - {{ create_title() }}</span>
-            <div class="mdl-layout-spacer"></div>
-        </div>
-    </header>
-    <div class="mdl-layout__drawer">
-        <span class="mdl-layout__title">Providence</span>
-    </div>
-    <main class="mdl-layout__content">
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container">
+    <div class="row">
+      <div class="twelve columns" style="margin-top: 5%">
+        <h2>Providence - {{ create_title() }}</h2>
         {% block content %}{% endblock %}
-    </main>
-</div>
+      </div>
+    </div>
+  </div>
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 </body>
 </html>

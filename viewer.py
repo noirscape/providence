@@ -1,10 +1,12 @@
 from flask import Flask, render_template
 import yaml
 import db
-from sqlalchemy import create_engine, func, and_
+from sqlalchemy import create_engine, func, and_, cast, Date
 from sqlalchemy.orm import scoped_session, sessionmaker, aliased
 from datetime import datetime, timedelta
 import re
+import json
+import viewer_modules.jinja_formatters
 
 app = Flask(__name__)
 
@@ -21,8 +23,26 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 db.Base.query = db_session.query_property()
 
+# Register date filter
+app.jinja_env.filters['date'] = viewer_modules.jinja_formatters.date
 
-def process_messages(message_cls, attachment_cls, edit_cls, channel_id, date):
+
+def process_messages(message_cls, attachment_cls, edit_cls, delete_cls, channel_id, date):
+    """
+    Function that like, gets messages from the database on a specific date.
+
+    Used to prevent a lot of code repetition.
+
+    Pass in references to the classes, not instantiated versions.
+
+    Arguments:
+        message_cls: Message model class used for the message type.
+        attachment_cls: Attachment model class
+        edit_cls: Message edits model class.
+        channel_id: Channel ID to fetch messages from.
+        date: Date to filter on.
+    """
+
     date = datetime.strptime(date, "%Y-%m-%d")
 
     r_image = re.compile(r".*\.(jpg|jpeg|png|gif|webp)$")
@@ -44,25 +64,42 @@ def process_messages(message_cls, attachment_cls, edit_cls, channel_id, date):
         for attachment in message.attachments:
             attachment.is_image = r_image.match(attachment.url)
 
-    return all_messages[0].channel, all_messages
+        if message.embed:
+            message.embed = json.loads(message.embed)
+
+        if db_session.query(delete_cls).filter_by(message_id=message.id).scalar():
+            message.deleted = True
+        else:
+            message.deleted = False
+
+    all_messages_grouped = []
+    previous_author = all_messages[0].author.id
+    temp_list = []
+    for message in all_messages:
+        if message.author.id == previous_author:
+            temp_list.append(message)
+        else:
+            all_messages_grouped.append(temp_list)
+            temp_list = [message]
+        previous_author = message.author.id
+    all_messages_grouped.append(temp_list)
+
+    return all_messages[0].channel, all_messages_grouped, len(all_messages)
 
 
 def request_days(message_cls, channel_id):
-    all_messages = db_session.query(message_cls).filter_by(channel_id=channel_id).all()
+    """
+    Function that gets a list of all dates at which a message was send.
 
-    # This should probably be a part of the query lol
-    days = []
-    prev_day = None
-    for message in all_messages:
-        if prev_day is None:
-            days.append(message.created_at.date())
-            prev_day = message.created_at
-            continue
-        if prev_day.date() != message.created_at.date():
-            prev_day = message.created_at
-            days.append(message.created_at.date())
+    Arguments:
+        message_cls: Pass this in as a reference. Message model to use for fetching.
+        channel_id: Channel ID to get dates from.
+    """
+    days = db_session.query(cast(message_cls.created_at, Date)).filter_by(channel_id=channel_id).distinct().all()
+    days = [day[0] for day in days]
+    channel = db_session.query(message_cls).filter_by(channel_id=channel_id).first().channel
 
-    return all_messages[0].channel, days
+    return channel, days
 
 @app.teardown_appcontext
 def shutdown_session(exception=None):
@@ -70,6 +107,9 @@ def shutdown_session(exception=None):
 
 
 @app.route('/')
+def view_root():
+    return render_template("root.html")
+
 @app.route('/guilds/')
 def list_all_guilds():
     all_guilds = db_session.query(db.Guild).all()
@@ -81,6 +121,12 @@ def list_guild_channels(guild_id):
     channels = db_session.query(db.GuildChannel).filter_by(guild_id=guild_id).order_by(
         db.GuildChannel.created_at.asc()).all()
     return render_template("channel_list.html", channels=channels)
+
+@app.route('/guilds/<guild_id>/info')
+def show_single_guild(guild_id):
+    guild = db_session.query(db.Guild).filter_by(id=guild_id).one()
+    members = db_session.query(db.GuildMember).filter_by(guild_id=guild_id).all()
+    return render_template("guild_details.html", guild=guild, members=members)
 
 
 @app.route('/users/<user_id>/')
@@ -94,14 +140,19 @@ def show_single_user(user_id):
 def list_all_logged_days_for_channel(channel_id):
     channel, days = request_days(db.GuildMessage, channel_id)
 
-    return render_template("guild_days_list.html", channel=channel, days=days)
+    return render_template("days_list.html", channel=channel, days=days)
+
+
+@app.route('/channels/<channel_id>/info')
+def list_channel_info(channel_id):
+    return "Not implemented."
 
 
 @app.route('/channels/<channel_id>/<date>')
 def list_all_messages_per_day(channel_id, date):
-    channel, messages = process_messages(db.GuildMessage, db.GuildMessageAttachments, db.GuildMessageEdit, channel_id, date)
+    channel, messages, total_messages = process_messages(db.GuildMessage, db.GuildMessageAttachments, db.GuildMessageEdit, db.GuildMessageDeletion, channel_id, date)
 
-    return render_template("messages.html", channel=channel, messages=messages, message_length=len(messages))
+    return render_template("messages.html", channel=channel, all_messages_grouped=messages, message_length=total_messages)
 
 @app.route('/dms/')
 def list_all_dms():
@@ -112,15 +163,15 @@ def list_all_dms():
 @app.route('/dms/<dm_id>/')
 def list_all_logged_days_for_dm(dm_id):
     channel, days = request_days(db.PrivateMessage, dm_id)
-    return render_template("dm_days_list.html", channel=channel, days=days)
+    return render_template("days_list.html", channel=channel, days=days)
 
 
 @app.route('/dms/<dm_id>/<date>')
 def list_all_dms_per_day(dm_id, date):
-    channel, messages = process_messages(db.PrivateMessage, db.PrivateMessageAttachments, db.PrivateMessageEdit, dm_id, date)
+    channel, messages, total_messages = process_messages(db.PrivateMessage, db.PrivateMessageAttachments, db.PrivateMessageEdit, db.PrivateMessageDeletion, dm_id, date)
     channel.guild = channel.remote_user # STUPID AND HACKY BUT IT WORKS!
 
-    return render_template("messages.html", channel=channel, messages=messages, message_length=len(messages))
+    return render_template("messages.html", channel=channel, all_messages_grouped=messages, message_length=total_messages)
 
 
 if __name__ == '__main__':

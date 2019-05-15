@@ -1,34 +1,31 @@
 - [ ] Logger
-  - [ ] Private messages
+  - [x] Private messages
     - [x] Log new messages
     - [x] Log edits to messages
     - [x] Log pins in channel
-    - [ ] Log reactions to messages
-  - [ ] Guild messages
+  - [x] Guild messages
     - [x] Log new messages
     - [x] Log edits to messages
     - [x] Log pins in channel
-    - [ ] Log reactions to messages
    - [ ] Log channel changes
    - [ ] Log guild changes
    - [ ] Log role changes
-   - [ ] Log user updates
-     - [ ] Log role additions
-     - [ ] Log role removals
+   - [x] Log user updates
+     - [x] Log role additions
+     - [x] Log role removals
   - [ ] Log old/existing messages
 - [ ] Viewer
   - [x] Template
   - [x] DM list
   - [x] Guild overview
-  - [ ] Guild details
+  - [x] Guild details
   - [x] Channel list
   - [ ] Channel info
   - [x] Date/time per channel
   - [ ] Messages per day
     - [x] Message content
     - [x] Attachments
-    - [ ] Reactions
-    - [ ] Embeds
+    - [x] Embeds
     - [ ] Export as panopticon logs
   - [x] User overview
     - [ ] User guild history
@@ -44,3 +41,10 @@ If implemented, these should be toggleable due to storage concerns.
 Deployment things:
 
 - [ ] Docker?
+
+Really far future stuff:
+
+- [ ] Logging reactions
+  - [x] Implement on template
+  - [ ] Implement in logger
+  - [ ] Implement in viewer 

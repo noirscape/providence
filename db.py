@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, ForeignKey, String, DateTime, JSON, Boolean
+from sqlalchemy import Column, BigInteger, ForeignKey, String, DateTime, JSON, Boolean, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -47,9 +47,12 @@ class Role(Base):
 
 class GuildMember(Base):
     __tablename__ = "guild_members"
-    user_id = Column(BigInteger, ForeignKey("users.id"), primary_key=True)
+    __table_args__ = (
+        UniqueConstraint('user_id', 'guild_id', name='unique_guild_and_id'),
+    )
+    user_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     user = relationship(User)
-    guild_id = Column(BigInteger, ForeignKey("guilds.id"), primary_key=True)
+    guild_id = Column(BigInteger, ForeignKey("guilds.id"), nullable=False)
     guild = relationship(Guild)
     id = Column(BigInteger, autoincrement=True, primary_key=True, unique=True)
     nickname = Column(String(MAX_USERNAME_LENGTH))
