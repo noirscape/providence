@@ -12,13 +12,17 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DatabaseOperations:
-    def __init__(self, config):
+    def __init__(self, config, session_manager):
         """Instantiate DatabaseOperations class.
 
-        Config: User config to pass in."""
+        Config: User config to pass in.
+        session_manager: Manager for all sessions."""
         self.config = config
+        self.session_manager = session_manager
 
-    def create_user(self, user: discord.User, session):
+    def create_user(self, user: discord.User):
+        session = self.session_manager()
+
         if self.config["local_avatars"]:
             r = requests.get(user.avatar_url_as(format='png'))
             with open(f"static/avatars/{user.id}.png", 'wb') as avatarfile:
@@ -31,24 +35,34 @@ class DatabaseOperations:
                            avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now())
         session.merge(new_user)
 
+        session.commit()
+        session.close()
 
-    def create_dm_channel(self, channel: discord.DMChannel, session):
+    def create_dm_channel(self, channel: discord.DMChannel):
+        session = self.session_manager()
+
         new_dm_channel = db.DMChannel(id=channel.id, remote_user_id=channel.recipient.id)
         session.merge(new_dm_channel)
 
+        session.commit()
+        session.close()
 
-    def store_private_message(self, message: discord.Message, session):
+
+    def store_private_message(self, message: discord.Message):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.User.id == message.author.id)).scalar():
-            self.create_user(message.author, session)
+            self.create_user(message.author)
         if not session.query(exists().where(db.User.id == message.channel.recipient.id)).scalar():
-            self.create_user(message.channel.recipient, session)
+            self.create_user(message.channel.recipient)
         if not session.query(exists().where(db.DMChannel.id == message.channel.id)).scalar():
-            self.create_dm_channel(message.channel, session)
+            self.create_dm_channel(message.channel)
 
         new_message = db.PrivateMessage(id=message.id, channel_id=message.channel.id, author_id=message.author.id,
                                         content=message.clean_content, embed=embed.get_rich_embed(message),
                                         created_at=message.created_at)
         session.merge(new_message)
+        session.commit()
 
         for attachment in message.attachments:
             if self.config["local_attachments"]:
@@ -62,10 +76,15 @@ class DatabaseOperations:
                                                           filename=attachment.filename, url=attachment_url,
                                                           filesize=attachment.size)
             session.merge(new_attachment)
+            session.commit()
+        session.close()
 
-    def store_private_message_edit(self, before: discord.Message, after: discord.Message, session):
+
+    def store_private_message_edit(self, before: discord.Message, after: discord.Message):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.PrivateMessage.id == before.id)).scalar():
-            self.store_private_message(before, session)
+            self.store_private_message(before)
 
         if before.content == after.content:
             store_content = None
@@ -81,43 +100,65 @@ class DatabaseOperations:
                                                  edit_time=after.edited_at)
         session.merge(new_message_edit)
 
+        session.commit()
+        session.close()
 
-    def update_private_pin(self, message: discord.Message, session):
+
+    def update_private_pin(self, message: discord.Message):
+        session = self.session_manager()
+
         if session.query(exists().where(and_(db.DMChannelPins.message_id == message.id, db.DMChannelPins.is_pinned == True))
                         ).scalar():
             pass
         else:
             if not session.query(exists().where(db.PrivateMessage.id == message.id)).scalar():
-                self.store_private_message(message, session)
+                self.store_private_message(message)
             new_pin = db.DMChannelPins(dm_channel_id=message.channel.id, message_id=message.id, is_pinned=True,
                                        pinned_at=datetime.datetime.now())
             session.add(new_pin)
 
+        session.commit()
+        session.close()
 
-    def get_all_dm_pins(self, channel: discord.DMChannel, session) -> list:
+
+    def get_all_dm_pins(self, channel: discord.DMChannel) -> list:
+        session = self.session_manager()
+
         pin_list = []
         for result in session.query(db.DMChannelPins).filter_by(dm_channel_id=channel.id):
             pin_list.append((result.message_id, result.pin_id))
+        session.commit()
+        session.close()
         return pin_list
 
 
-    def remove_dm_pin(self, pin_id: int, session):
+    def remove_dm_pin(self, pin_id: int):
+        session = self.session_manager()
+
         pin = session.query(db.DMChannelPins).filter_by(pin_id=pin_id).one()
         if pin.is_pinned:
             pin.is_pinned = False
             pin.unpinned_at = datetime.datetime.now()
         session.merge(pin)
 
+        session.commit()
+        session.close()
 
-    def delete_private_message(self, message: discord.Message, session):
+
+    def delete_private_message(self, message: discord.Message):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.PrivateMessage.id == message.id)).scalar():
-            self.store_private_message(message, session)
+            self.store_private_message(message)
 
         new_delete = db.PrivateMessageDeletion(message_id=message.id, deletion_time=datetime.datetime.now())
         session.merge(new_delete)
 
+        session.commit()
+        session.close()
 
-    def create_member(self, user: discord.Member, guild: discord.Guild, session):
+
+    def create_member(self, user: discord.Member, guild: discord.Guild):
         """
         Create a new member in the database.
 
@@ -125,58 +166,89 @@ class DatabaseOperations:
             user: discord.Member object to put in the database.
             guild: Guild to put in database (required and separate to prevent freak accidents).
         """
+        session = self.session_manager()
+
         if not session.query(exists().where(db.User.id == user.id)).scalar():
-            self.create_user(user, session)
+            self.create_user(user)
         if not session.query(exists().where(db.Guild.id == guild.id)).scalar():
-            self.create_guild(guild, session)
+            self.create_guild(guild)
             if user.id == guild.owner_id: # Prevents cyclical creation of guild and owner!
                 return
-        new_member = db.GuildMember(user_id=user.id, guild_id=guild.id, nickname=user.nick,
+        if hasattr(user, "nick"):
+            nickname = user.nick
+        else:
+            nickname = None
+        new_member = db.GuildMember(user_id=user.id, guild_id=guild.id, nickname=nickname,
                                     last_updated=datetime.datetime.now())
         session.merge(new_member)
 
+        session.commit()
+        session.close()
 
-    def create_guild(self, guild: discord.Guild, session):
+
+    def create_guild(self, guild: discord.Guild):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.User.id == guild.owner.id)).scalar():
-            self.create_user(guild.owner, session)
+            self.create_user(guild.owner)
 
         new_guild = db.Guild(id=guild.id, name=guild.name, icon_url=str(guild.icon_url), owner_id=guild.owner_id,
                              created_at=guild.created_at, last_updated=datetime.datetime.now())
+
         session.merge(new_guild)
 
         if not session.query(exists().where(and_(db.GuildMember.user_id == guild.owner_id,
                                                  db.GuildMember.guild_id == guild.id))).scalar():
-            self.create_member(guild.owner, guild, session)
+            self.create_member(guild.owner, guild)
 
-    def create_guild_channel(self, channel: discord.TextChannel, session):
+        session.commit()
+        session.close()
+
+
+    def create_guild_channel(self, channel: discord.TextChannel):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.Guild.id == channel.guild.id)).scalar():
-            self.create_guild(channel.guild, session)
+            self.create_guild(channel.guild)
             session.close()
         new_guild_channel = db.GuildChannel(id=channel.id, guild_id=channel.guild.id, name=channel.name,
                                             topic=channel.topic,
                                             created_at=channel.created_at, last_updated=datetime.datetime.now())
         session.merge(new_guild_channel)
 
-    def create_role(self, role: discord.Role, session):
-        LOGGER.info("Creating new role %s (%d)", role.name, role.id)
+        session.commit()
+        session.close()
+
+
+    def create_role(self, role: discord.Role):
+        session = self.session_manager()
+
+        LOGGER.warning("Creating new role %s (%d)", role.name, role.id)
         if not session.query(exists().where(db.Guild.id == role.guild.id)).scalar():
-            self.create_guild(role.guild, session)
+            self.create_guild(role.guild)
         new_role = db.Role(id=role.id,
                            guild_id=role.guild.id,
                            name=role.name,
                            created_at=role.created_at)
         session.merge(new_role)
-        LOGGER.info("Role creation succesfull!")
+        LOGGER.warning("Role creation succesfull!")
 
-    def store_guild_message(self, message: discord.Message, session):
+        session.commit()
+        session.close()
+
+
+    def store_guild_message(self, message: discord.Message):
+        session = self.session_manager()
+
         if not session.query(exists().where(
                 and_(db.GuildMember.user_id == message.author.id, db.GuildMember.guild_id == message.guild.id))).scalar():
-            self.create_member(message.author, message.guild, session)
-        if not session.query(exists().where(db.DMChannel.id == message.channel.id)).scalar():
-            self.create_guild_channel(message.channel, session)
+            self.create_member(message.author, message.guild)
+        if not session.query(exists().where(db.GuildChannel.id == message.channel.id)).scalar():
+            self.create_guild_channel(message.channel)
         new_message = db.GuildMessage(id=message.id, channel_id=message.channel.id, author_id=message.author.id,
-                                    content=message.clean_content, embed=embed.get_rich_embed(message), created_at=message.created_at)
+                                      content=message.clean_content, embed=embed.get_rich_embed(message), created_at=message.created_at)
         session.merge(new_message)
+        session.commit()
 
         for attachment in message.attachments:
             if self.config["local_attachments"]:
@@ -190,11 +262,16 @@ class DatabaseOperations:
                                                         filename=attachment.filename, url=attachment_url,
                                                         filesize=attachment.size)
             session.merge(new_attachment)
+            session.commit()
+
+        session.close()
 
 
-    def store_guild_message_edit(self, before: discord.Message, after: discord.Message, session):
+    def store_guild_message_edit(self, before: discord.Message, after: discord.Message):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.GuildMessage.id == before.id)).scalar():
-            self.store_guild_message(before, session)
+            self.store_guild_message(before)
 
         if before.content == after.content:
             store_content = None
@@ -209,45 +286,69 @@ class DatabaseOperations:
         new_message_edit = db.GuildMessageEdit(message_id=after.id, content=store_content, 
                                                embed=store_embed, edit_time=after.edited_at)
         session.merge(new_message_edit)
+        session.commit()
+        session.close()
 
 
-    def delete_guild_message(self, message: discord.Message, session):
+    def delete_guild_message(self, message: discord.Message):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.GuildMessage.id == message.id)).scalar():
-            self.store_guild_message(message, session)
+            self.store_guild_message(message)
 
         new_delete = db.GuildMessageDeletion(message_id=message.id, 
                                              deletion_time=datetime.datetime.now())
         session.merge(new_delete)
+        session.commit()
+        session.close()
 
 
-    def get_all_guild_channel_pins(self, channel: discord.TextChannel, session) -> list:
+    def get_all_guild_channel_pins(self, channel: discord.TextChannel) -> list:
+        session = self.session_manager()
+
         pin_list = []
         for result in session.query(db.GuildChannel).filter_by(id=channel.id):
             pin_list.append((result.message_id, result.pin_id))
         return pin_list
 
+        session.commit()
+        session.close()
 
-    def remove_guild_channel_pin(self, pin_id: int, session):
+
+    def remove_guild_channel_pin(self, pin_id: int):
+        session = self.session_manager()
+
         pin = session.query(db.GuildChannelPins).filter_by(pin_id=pin_id).one()
         if pin.is_pinned:
             pin.is_pinned = False
             pin.unpinned_at = datetime.datetime.now()
         session.merge(pin)
+        session.commit()
+        session.close()
 
-    def update_guild_channel_pin(self, message: discord.Message, session):
+
+    def update_guild_channel_pin(self, message: discord.Message):
+        session = self.session_manager()
+
         if session.query(exists().where(and_(db.GuildChannelPins.message_id == message.id, db.GuildChannelPins.is_pinned == True))
                         ).scalar():
             pass
         else:
             if not session.query(exists().where(db.GuildMessage.id == message.id)).scalar():
-                self.store_private_message(message, session)
+                self.store_guild_message(message)
             new_pin = db.GuildChannelPins(guild_channel_id=message.channel.id, message_id=message.id, is_pinned=True,
                                           pinned_at=datetime.datetime.now())
             session.add(new_pin)
 
-    def update_user(self, before: discord.User, after: discord.User, session):
+        session.commit()
+        session.close()
+
+
+    def update_user(self, before: discord.User, after: discord.User):
+        session = self.session_manager()
+
         if not session.query(exists().where(db.User.id == before.id)).scalar():
-            self.create_user(before, session)
+            self.create_user(before)
 
         user_model = session.query(db.User).filter_by(id=before.id).one()
 
@@ -275,10 +376,16 @@ class DatabaseOperations:
         user_model.avatar = new_avatar
         session.merge(user_model)
 
-    def update_member(self, before: discord.Member, after: discord.Member, session):
+        session.commit()
+        session.close()
+
+
+    def update_member(self, before: discord.Member, after: discord.Member):
+        session = self.session_manager()
+
         if not session.query(exists().where(and_(db.GuildMember.user_id == before.id,
                                                  db.GuildMember.guild_id == before.guild.id))).scalar():
-            self.create_member(before, before.guild, session)
+            self.create_member(before, before.guild)
 
         member_model = session.query(db.GuildMember).filter_by(user_id=before.id, guild_id=before.guild.id).one()
 
@@ -303,13 +410,13 @@ class DatabaseOperations:
             if role not in after.roles:
                 removed_roles.append(role)
             if not session.query(exists().where(db.Role.id == role.id)).scalar():
-                self.create_role(role, session)
+                self.create_role(role)
 
         for role in after.roles:
             if role not in before.roles:
                 added_roles.append(role)
             if not session.query(exists().where(db.Role.id == role.id)).scalar():
-                self.create_role(role, session)
+                self.create_role(role)
 
         if added_roles or after.id == 126747960972279808:
             LOGGER.warning("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
@@ -331,3 +438,6 @@ class DatabaseOperations:
                                        role_was_added=False,
                                        event_at=datetime.datetime.now())
             session.add(role_remove)
+
+        session.commit()
+        session.close()
