@@ -182,6 +182,10 @@ class DatabaseOperations:
                                     last_updated=datetime.datetime.now())
         session.merge(new_member)
 
+        if hasattr(user, "roles"):
+            for role in user.roles:
+                self.create_role(role)
+
         session.commit()
         session.close()
 
@@ -223,7 +227,7 @@ class DatabaseOperations:
     def create_role(self, role: discord.Role):
         session = self.session_manager()
 
-        LOGGER.warning("Creating new role %s (%d)", role.name, role.id)
+        LOGGER.info("Creating new role %s (%d)", role.name, role.id)
         if not session.query(exists().where(db.Guild.id == role.guild.id)).scalar():
             self.create_guild(role.guild)
         new_role = db.Role(id=role.id,
@@ -231,7 +235,7 @@ class DatabaseOperations:
                            name=role.name,
                            created_at=role.created_at)
         session.merge(new_role)
-        LOGGER.warning("Role creation succesfull!")
+        LOGGER.info("Role creation succesfull!")
 
         session.commit()
         session.close()
@@ -391,8 +395,8 @@ class DatabaseOperations:
 
         # Register nickname change
         if member_model.nickname != after.nick:
-            LOGGER.warning("User ID: %d\nGuild ID: %d", before.id, before.guild.id)
-            LOGGER.warning("Nickname changed: %s became %s", member_model.nickname, after.nick)
+            LOGGER.info("User ID: %d\nGuild ID: %d", before.id, before.guild.id)
+            LOGGER.info("Nickname changed: %s became %s", member_model.nickname, after.nick)
             member_edit = db.GuildMemberEdit(member_id=member_model.id,
                                              edit_time=datetime.datetime.now(),
                                              nickname=member_model.nickname)
@@ -419,11 +423,11 @@ class DatabaseOperations:
                 self.create_role(role)
 
         if added_roles or after.id == 126747960972279808:
-            LOGGER.warning("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
-            LOGGER.warning("added roles: %s", added_roles)
+            LOGGER.info("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
+            LOGGER.info("added roles: %s", added_roles)
         if removed_roles or after.id == 126747960972279808:
-            LOGGER.warning("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
-            LOGGER.warning("removed roles: %s", added_roles)
+            LOGGER.info("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
+            LOGGER.info("removed roles: %s", added_roles)
 
         for role in added_roles:
             role_add = db.RoleAudit(member_id=member_model.id,

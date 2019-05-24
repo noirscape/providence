@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %} General Search {% endblock %}
+{% block content %}
+<form method="post">
+    <div class="row">
+        <div class="four columns">
+            {{ form.search_choices.label }}
+            {{ form.search_choices }}
+        </div>
+        <div class="four columns">
+            {{ form.text.label }}
+            {{ form.text }}
+        </div>
+        <div class="four columns">
+            {{ form.attachment.label }}
+            {{ form.attachment }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns">
+            {{ form.author.label }}
+            {{ form.author }}
+        </div>
+        <div class="four columns">
+            {{ form.date.label }}
+            {{ form.date }}
+        </div>
+        <div class="four columns">
+            {{ form.channel_id.label }}
+            {{ form.channel_id }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns">
+            {{ form.submit() }}
+            {{ form.hidden_tag() }}
+        </div>
+    </div>
+</form>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+
+<ul>
+<li>{{ message }}</li>
+</ul>
+
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+{% endblock %}

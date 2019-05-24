@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, flash, redirect
 import yaml
 import db
 from sqlalchemy import create_engine, func, and_, cast, Date
@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import re
 import json
 import viewer_modules.jinja_formatters
+import viewer_modules.forms as forms
+import viewer_modules.search
 
 app = Flask(__name__)
 
@@ -25,7 +27,7 @@ db.Base.query = db_session.query_property()
 
 # Register date filter
 app.jinja_env.filters['date'] = viewer_modules.jinja_formatters.date
-
+app.config["SECRET_KEY"] = 'boop'
 
 def process_messages(message_cls, attachment_cls, edit_cls, delete_cls, channel_id, date):
     """
@@ -173,6 +175,23 @@ def list_all_dms_per_day(dm_id, date):
     channel.guild = channel.remote_user # STUPID AND HACKY BUT IT WORKS!
 
     return render_template("messages.html", channel=channel, all_messages_grouped=messages, message_length=total_messages)
+
+
+@app.route('/search/', methods=['GET', 'POST'])
+def general_search():
+    form = forms.GeneralSearchForm()
+    if form.validate_on_submit():
+        flash("Search not yet implemented.")
+        #flash(viewer_modules.search.search_on_session(form, db_session))
+        return redirect('/search/')
+    return render_template("search.html", form=form)
+
+
+@app.route('/results')
+def general_results(form):
+    results = []
+    
+    # Author search
 
 
 if __name__ == '__main__':
