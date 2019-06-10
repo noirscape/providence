@@ -117,6 +117,12 @@ async def on_guild_role_update(before, after):
 
 
 @client.event
+async def on_guild_channel_update(before, after):
+    if before.name != after.name or before.topic != after.topic:
+        operations.update_guild_channel(before, after)
+
+
+@client.event
 async def on_ready():
     print("Ready to log messages!")
 

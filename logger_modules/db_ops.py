@@ -519,3 +519,35 @@ class DatabaseOperations:
         session.merge(role_model)
         session.commit()
         session.close()
+
+    def update_guild_channel(before: discord.TextChannel, after: discord.TextChannel):
+        session = self.session_manager()
+
+        channel_model = session.query(db.GuildChannel).filter_by(id=before.id).one()
+
+        changes = False
+        old_name = None
+        old_topic = None
+
+        if before.name != after.name:
+            old_name = before.name
+            channel_model.name = after.name
+            LOGGER.info("Channel ID:%s:Name changed from %s to %s", before.id, before.name, after.name)
+            changes = True
+        if before.topic != after.topic:
+            old_topic = before.topic
+            channel_model.topic = after.topic
+            LOGGER.info("Channel ID:%s:Topic changed from %s to %s", before.id, before.topic, after.topic)
+            changes = True
+
+        if changes:
+            new_guild_channel_edit = db.GuildChannelEdit(
+                guild_channel_id=changes,
+                name=old_name,
+                topic=old_topic
+            )
+            session.add(new_guild_channel_edit)
+
+        session.merge(channel_model)
+        session.commit()
+        session.close()
