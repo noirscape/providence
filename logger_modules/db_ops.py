@@ -490,7 +490,7 @@ class DatabaseOperations:
         session.commit()
         session.close()
 
-    def update_role(before: discord.Role, after: discord.Role):
+    def update_role(self, before: discord.Role, after: discord.Role):
         session = self.session_manager()
 
         if not session.query(exists().where(db.Role.id == before.id)).scalar():
@@ -520,7 +520,7 @@ class DatabaseOperations:
         session.commit()
         session.close()
 
-    def update_guild_channel(before: discord.TextChannel, after: discord.TextChannel):
+    def update_guild_channel(self, before: discord.TextChannel, after: discord.TextChannel):
         session = self.session_manager()
 
         channel_model = session.query(db.GuildChannel).filter_by(id=before.id).one()
@@ -542,9 +542,10 @@ class DatabaseOperations:
 
         if changes:
             new_guild_channel_edit = db.GuildChannelEdit(
-                guild_channel_id=changes,
+                guild_channel_id=before.id,
                 name=old_name,
-                topic=old_topic
+                topic=old_topic,
+                edit_time=datetime.datetime.now()
             )
             session.add(new_guild_channel_edit)
 

@@ -25,8 +25,9 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 db.Base.query = db_session.query_property()
 
-# Register date filter
+# Register date filters
 app.jinja_env.filters['date'] = viewer_modules.jinja_formatters.date
+app.jinja_env.filters['datetime'] = viewer_modules.jinja_formatters.datetime
 app.config["SECRET_KEY"] = 'boop'
 
 def process_messages(message_cls, attachment_cls, edit_cls, delete_cls, channel_id, date):
@@ -153,7 +154,9 @@ def list_all_logged_days_for_channel(channel_id):
 
 @app.route('/channels/<channel_id>/info')
 def list_channel_info(channel_id):
-    return "Not implemented."
+    channel = db_session.query(db.GuildChannel).filter_by(id=channel_id).one()
+    channel_edits = db_session.query(db.GuildChannelEdit).filter_by(guild_channel_id=channel_id).all()
+    return render_template("channel_details.html", channel=channel, channel_edits=channel_edits)
 
 
 @app.route('/channels/<channel_id>/<date>')

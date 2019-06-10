@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Channel details{% endblock %}
+{% block content %}
+
+<h3>#{{ channel.name }}</h2>
+
+{% if channel.topic %}
+Topic: <i>{{ channel.topic }}</i>
+{% endif %}
+
+{% if channel_edits %}
+<h3>History</h3>
+<table class="u-full-width">
+    <thead>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Topic</th>
+    </thead>
+    <tbody>
+        {% for channel_edit in channel_edits %}
+        <tr>
+            <td>{{ channel_edit.edit_time | datetime }}</td>
+            <td>{% if channel_edit.name %}{{ channel_edit.name }}{% endif %}</td>
+            <td>{% if channel_edit.topic %}{{ channel_edit.topic }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}
