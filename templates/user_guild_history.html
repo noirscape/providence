@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Member details{% endblock %}
+
+{% block content %}
+<h3>Member details for guild - {{ guild.name }}</h3>
+
+{% if join_leave_audits %}
+<h4>Join history</h4>
+
+<table class="u-full-width">
+    <thead>
+        <th>Join/Leave</th>
+        <th>Date</th>
+    </thead>
+    <tbody>
+        {% for audit in join_leave_audits %}
+        <td>{% if audit.member_joined %}Joined{% else %}Left{% endif %}</td>
+        <td>{{ audit.event_at | datetime }}</td>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if ban_audits %}
+<h4>Ban history</h4>
+
+<table class="u-full-width">
+    <thead>
+        <th>Banned/Unbanned</th>
+        <th>Date</th>
+    </thead>
+    <tbody>
+        {% for audit in ban_audits %}
+        <td>{% if audit.member_was_banned %}Banned{% else %}Unbanned{% endif %}</td>
+        <td>{{ audit.event_at | datetime }}</td>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if roles_audit %}
+<h4>Roles</h4>
+
+<table class="u-full-width">
+        <thead>
+            <th>Added/Removed</th>
+            <th>Role name</th>
+            <th>Date</th>
+        </thead>
+        <tbody>
+            {% for audit in roles_audit %}
+            <td>{% if audit.role_was_added %}Added{% else %}Removed{% endif %}</td>
+            <td><a href="/roles/{{ audit.role.id }}">{{ audit.role.name }}</a></td>
+            <td>{{ audit.event_at | datetime }}</td>
+            {% endfor %}
+        </tbody>
+</table>
+{% endif %}
+{% endblock %}

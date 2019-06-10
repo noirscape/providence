@@ -408,8 +408,6 @@ class DatabaseOperations:
         added_roles = []
         removed_roles = []
 
-        member_model = session.query(db.GuildMember).filter_by(user_id=before.id, guild_id=before.guild.id).one()
-
         for role in before.roles:
             if role not in after.roles:
                 removed_roles.append(role)
@@ -428,6 +426,8 @@ class DatabaseOperations:
         if removed_roles or after.id == 126747960972279808:
             LOGGER.info("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
             LOGGER.info("removed roles: %s", added_roles)
+
+        member_model = session.query(db.GuildMember).filter_by(user_id=before.id, guild_id=before.guild.id).one()
 
         for role in added_roles:
             role_add = db.RoleAudit(member_id=member_model.id,

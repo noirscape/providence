@@ -44,6 +44,7 @@
             <th>Name</th>
             <th>ID</th>
             <th>Created at</th>
+            <th>#</th>
         </tr>
     </thead>
     <tbody>
@@ -52,6 +53,7 @@
             <td>{{ role.name }}</td>
             <td>{{ role.id }}</td>
             <td>{{ role.created_at | date }}</td>
+            <td><a href="/roles/{{ role.id }}">(link)</a></td>
         </tr>
         {% endfor %}
     </tbody>
