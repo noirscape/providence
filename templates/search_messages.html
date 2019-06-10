@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %} Message Search {% endblock %}
+{% block content %}
+<form method="post">
+    <div class="row">
+        <div class="four columns">
+            {{ form.search_choices.label }}
+            {{ form.search_choices }}
+        </div>
+        <div class="four columns">
+            {{ form.text.label }}
+            {{ form.text }}
+        </div>
+        <div class="four columns">
+            {{ form.attachment.label }}
+            {{ form.attachment }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns">
+            {{ form.author.label }}
+            {{ form.author }}
+        </div>
+        <div class="four columns">
+            {{ form.date.label }}
+            {{ form.date(placeholder="YYYY-MM-DD") }}
+        </div>
+        <div class="four columns">
+            {{ form.channel_id.label }}
+            {{ form.channel_id }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns">
+            {{ form.guild_id.label }}
+            {{ form.guild_id }}
+        </div>
+        <div class="four columns">
+            {{ form.submit() }}
+            {{ form.hidden_tag() }}
+        </div>
+    </div>
+</form>
+
+{% if results %}
+<table class="u-full-width">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Author</th>
+            <th>Content</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>#</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.id }}</td>
+            <td><a href="/users/{{ result.author.id }}">{{ result.author.name }}#{{ '{0:04d}'.format(result.author.discriminator) }}</a></td>
+            <td>{{ result.content }}</td>
+            <td>{{ result.created_at | date }}</td>
+            {% if result.channel.name %}
+            <td>#{{ result.channel.name }} in {{ result.channel.guild.name }}</td>
+            <td><a href="/channels/{{ result.channel.id }}/{{ result.created_at | date }}">(link)</a></td>
+            {% else %}
+            <td>DM with <a href="/users/{{ result.channel.remote_user.id }}">{{ result.channel.remote_user.name }}#{{ '{0:04d}'.format(result.channel.remote_user.discriminator) }}</a></td>
+            <td><a href="">(link)</a></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

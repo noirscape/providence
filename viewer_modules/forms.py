@@ -11,3 +11,9 @@ class GeneralSearchForm(FlaskForm):
     date = DateField('Date', [validators.Optional()])
     guild_id = IntegerField('Guild ID', [validators.Optional()])
     attachment = BooleanField("Has attachment?")
+
+class UserSearchForm(FlaskForm):
+    username = StringField('Username', [validators.Optional()])
+    discriminator = IntegerField('Discriminator', [validators.Optional()])
+    id = IntegerField('ID', [validators.Optional()])
+    submit = SubmitField('Search', [validators.Optional()])

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %} User Search {% endblock %}
+{% block content %}
+<form method="post">
+    <div class="row">
+        <div class="four columns">
+            {{ form.username.label }}
+            {{ form.username }}
+        </div>
+        <div class="four columns">
+            {{ form.discriminator.label }}
+            {{ form.discriminator }}
+        </div>
+        <div class="four columns">
+            {{ form.id.label }}
+            {{ form.id }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="four columns">
+            {{ form.submit() }}
+            {{ form.hidden_tag() }}
+        </div>
+    </div>
+</form>
+
+{% if results %}
+<table class="u-full-width">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>#</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.id }}</td>
+            <td>{{ result.name }}#{{ '{0:04d}'.format(result.discriminator) }}</td>
+            <td><a href="/users/{{ result.id }}">(link)</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

@@ -38,7 +38,7 @@
       - [x] Text
       - [x] Channel
       - [ ] Attachment
-    - [ ] User search
+    - [x] User search
   - [x] Fancy info page listing _overall_ stats
     - [x] Total tracked users
     - [x] Total tracked guilds

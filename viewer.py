@@ -182,20 +182,42 @@ def list_all_dms_per_day(dm_id, date):
     return render_template("messages.html", channel=channel, all_messages_grouped=messages, message_length=total_messages)
 
 
-@app.route('/search/', methods=['GET', 'POST'])
-def general_search():
+@app.route('/search/')
+def search_overview():
+    return render_template("search.html")
+
+
+@app.route('/search/messages', methods=['GET', 'POST'])
+def message_search():
     form = forms.GeneralSearchForm(request.form)
     results = []
-    if request.method == 'POST':
-        return general_results(form)
-    return render_template("search.html", form=form, results=results)
+    if request.method == 'POST' and form.validate_on_submit():
+        return message_results(form)
+    return render_template("search_messages.html", form=form, results=results)
 
 
-@app.route('/results')
-def general_results(form):
+@app.route('/search/users', methods=['GET', 'POST'])
+def user_search():
+    form = forms.UserSearchForm(request.form)
     results = []
-    results = viewer_modules.search.search_on_session(form, db_session)
-    return render_template("search.html", form=form, results=results)
+    if request.method == 'POST' and form.validate_on_submit():
+        return user_results(form)
+    return render_template("search_user.html", form=form, results=results)
+
+
+@app.route('/results/users')
+def user_results(form):
+    results = []
+    results = viewer_modules.search.search_users_on_session(form, db_session)
+    print(results)
+    return render_template("search_user.html", form=form, results=results)
+
+
+@app.route('/results/messages')
+def message_results(form):
+    results = []
+    results = viewer_modules.search.search_messages_on_session(form, db_session)
+    return render_template("search_messages.html", form=form, results=results)
 
 if __name__ == '__main__':
     app.run()
