@@ -2,6 +2,9 @@
 
 {% block title %} #root {% endblock %}
 {% block content %}
+<h2>Statistics</h2>
+<p>This database has kept track of <b>{{ total_users }} users</b>, <b>{{ total_guilds }} guilds</b>, <b>{{ total_channels }} channels</b>, <b>{{ total_messages }} messages</b> send (of which <b>{{ total_deletions }}</b> have been deleted).</p>
+<h2>Subendpoints</h2>
 <ul>
     <li><a href="/dms/">DMs</a></li>
     <li><a href="/guilds/">Guilds</a></li>

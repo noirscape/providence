@@ -110,7 +110,12 @@ def shutdown_session(exception=None):
 
 @app.route('/')
 def view_root():
-    return render_template("root.html")
+    total_users = db_session.query(db.User).count()
+    total_guilds = db_session.query(db.Guild).count()
+    total_messages = db_session.query(db.GuildMessage).count() + db_session.query(db.PrivateMessage).count()
+    total_deletions = db_session.query(db.GuildMessageDeletion).count() + db_session.query(db.PrivateMessageDeletion).count()
+
+    return render_template("root.html", total_users=total_users, total_guilds=total_guilds, total_messages=total_messages, total_deletions=total_deletions)
 
 @app.route('/guilds/')
 def list_all_guilds():

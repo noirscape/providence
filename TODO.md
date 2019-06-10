@@ -39,12 +39,12 @@
       - [x] Channel
       - [ ] Attachment
     - [ ] User search
-  - [ ] Fancy info page listing _overall_ stats
-    - [ ] Total tracked users
-    - [ ] Total tracked guilds
-    - [ ] Total tracked channels
-    - [ ] Total tracked messages
-      - [ ] Total deletions
+  - [x] Fancy info page listing _overall_ stats
+    - [x] Total tracked users
+    - [x] Total tracked guilds
+    - [x] Total tracked channels
+    - [x] Total tracked messages
+      - [x] Total deletions
 
 Optional features:
 
