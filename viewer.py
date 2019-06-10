@@ -179,20 +179,18 @@ def list_all_dms_per_day(dm_id, date):
 
 @app.route('/search/', methods=['GET', 'POST'])
 def general_search():
-    form = forms.GeneralSearchForm()
-    if form.validate_on_submit():
-        flash("Search not yet implemented.")
-        #flash(viewer_modules.search.search_on_session(form, db_session))
-        return redirect('/search/')
-    return render_template("search.html", form=form)
+    form = forms.GeneralSearchForm(request.form)
+    results = []
+    if request.method == 'POST':
+        return general_results(form)
+    return render_template("search.html", form=form, results=results)
 
 
 @app.route('/results')
 def general_results(form):
     results = []
-    
-    # Author search
-
+    results = viewer_modules.search.search_on_session(form, db_session)
+    return render_template("search.html", form=form, results=results)
 
 if __name__ == '__main__':
     app.run()

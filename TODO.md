@@ -31,6 +31,14 @@
     - [ ] User guild history
   - [ ] Role details
   - [ ] Search function
+    - [ ] Message search
+      - [x] Guild
+      - [x] Author
+      - [x] Date
+      - [x] Text
+      - [x] Channel
+      - [ ] Attachment
+    - [ ] User search
 
 Optional features:
 
@@ -47,4 +55,4 @@ Really far future stuff:
 - [ ] Logging reactions
   - [x] Implement on template
   - [ ] Implement in logger
-  - [ ] Implement in viewer 
+  - [ ] Implement in viewer

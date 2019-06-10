@@ -3,7 +3,7 @@
 {% block title %}User{% endblock %}
 
 {% block content %}
-<h3>{{ user.name }}#{{ user.discriminator }}</h3>
+<h3>{{ user.name }}#{{ '{0:04d}'.format(user.discriminator) }}</h3>
 
 <div class="row">
     <div class="three columns">
