@@ -9,7 +9,7 @@
     - [x] Log pins in channel
    - [ ] Log channel changes
    - [x] Log guild changes
-   - [ ] Log role changes
+   - [x] Log role changes
    - [x] Log user updates
      - [x] Log role additions
      - [x] Log role removals

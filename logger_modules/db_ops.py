@@ -489,3 +489,33 @@ class DatabaseOperations:
         session.merge(guild_model)
         session.commit()
         session.close()
+
+    def update_role(before: discord.Role, after: discord.Role):
+        session = self.session_manager()
+
+        if not session.query(exists().where(db.Role.id == before.id)).scalar():
+            self.create_role(before)
+            session.commit()
+
+        role_model = session.query(db.Guild).filter_by(id=before.id).one()
+
+        changes = False
+        old_name = None
+
+        if before.name != after.name:
+            old_name = before.name
+            role_model.name = after.name
+            LOGGER.info("Role ID:%s:Name changed from %s to %s", before.id, before.name, after.name)
+            changes = True
+
+        if changes:
+            new_role_edit = db.RoleEdit(
+                role_id=role_model.id,
+                name=old_name,
+                edit_time=datetime.datetime.now()
+            )
+            session.add(new_role_edit)
+
+        session.merge(role_model)
+        session.commit()
+        session.close()
