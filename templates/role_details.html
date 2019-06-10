@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Role Details{% endblock %}
+
+{% block content %}
+<h4>Information</h4>
+<p>Name: {{ role.name }}<br>
+ID: {{ role.id }}<br>
+Created at: {{ role.created_at | datetime }}<br></p>
+
+{% if role_users %}
+<h4>Users who currently have role</h4>
+
+<table class="u-full-width">
+        <thead>
+            <th>Username</th>
+            <th>#</th>
+        </thead>
+        <tbody>
+            {% for user in role_users %}
+            <tr>
+                <td>{{ user.name }}#{{ '{0:04d}'.format(user.discriminator) }}</td>
+                <td><a href="/users/{{ user.id }}">(link)</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+</table>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}All roles{% endblock %}
+
+{% block content %}
+<table class="u-full-width">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Guild</th>
+            <th>Total members with role</th>
+            <th>#</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for role in roles %}
+        <tr>
+            <td>{{ role.name }}</td>
+            <td>{{ role.guild.name }}</td>
+            <td>{{ role.total_members }}</td>
+            <td><a href="/roles/{{ role.id }}">(link)</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -20,7 +20,7 @@
   - [x] Guild overview
   - [x] Guild details
   - [x] Channel list
-  - [ ] Channel info
+  - [x] Channel info
   - [x] Date/time per channel
   - [ ] Messages per day
     - [x] Message content
@@ -28,9 +28,9 @@
     - [x] Embeds
     - [ ] Export as panopticon logs
   - [x] User overview
-    - [ ] User guild history
-  - [ ] Role details
-  - [ ] Search function
+    - [x] User guild history
+  - [x] Role details
+  - [x] Search function
     - [ ] Message search
       - [x] Guild
       - [x] Author

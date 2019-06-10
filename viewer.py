@@ -10,6 +10,7 @@ import json
 import viewer_modules.jinja_formatters
 import viewer_modules.forms as forms
 import viewer_modules.search
+import viewer_modules.session_filter as session_filter
 
 app = Flask(__name__)
 Misaka(app)
@@ -194,6 +195,26 @@ def list_all_dms_per_day(dm_id, date):
     channel.guild = channel.remote_user # STUPID AND HACKY BUT IT WORKS!
 
     return render_template("messages.html", channel=channel, all_messages_grouped=messages, message_length=total_messages)
+
+@app.route('/roles/')
+def show_all_roles():
+    all_roles = db_session.query(db.Role).all()
+
+    for role in all_roles:
+        role.total_members = len(session_filter.get_all_user_ids_with_role(db_session, role.id))
+
+    return render_template("role_list.html", roles=all_roles)
+
+@app.route('/roles/<role_id>')
+def show_role_info(role_id):
+    role = db_session.query(db.Role).filter_by(id=role_id).one()
+    user_ids = session_filter.get_all_user_ids_with_role(db_session, role_id)
+    role_users = []
+
+    for user_id in user_ids:
+        role_users.append(db_session.query(db.User).filter_by(id=user_id).one())
+
+    return render_template("role_details.html", role=role, role_users=role_users)
 
 
 @app.route('/search/')
