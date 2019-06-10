@@ -441,13 +441,13 @@ a {
                 <!-- Author and timestamp-->
                 <span class="chatlog__author-name" title="{{ message_group[0].author.name }}">
                     <a href="/users/{{ message_group[0].author.id }}" style="color: white;">{{ message_group[0].author.name }}</a></span>
-                <span class="chatlog__timestamp">{{ message_group[0].created_at }}</span>
+                <span class="chatlog__timestamp">{{ message_group[0].created_at | datetime }}</span>
                 {% for message in message_group %}
 
                 <!-- Content -->
                 {% if message.content %}
                     <div class="chatlog__content {% if message.deleted %} chatlog__deleted {% endif %}">
-                        {{ message.real_content }}
+                        {{ message.real_content | markdown_discord }}
 
                         <!-- Edited timestamp -->
                         {% if message.edits %}

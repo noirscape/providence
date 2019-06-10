@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, flash, redirect
+from flask_misaka import Misaka
 import yaml
 import db
 from sqlalchemy import create_engine, func, and_, cast, Date
@@ -11,6 +12,7 @@ import viewer_modules.forms as forms
 import viewer_modules.search
 
 app = Flask(__name__)
+Misaka(app)
 
 with open("config.yml") as configfile:
     config = yaml.safe_load(configfile)
@@ -25,9 +27,10 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 db.Base.query = db_session.query_property()
 
-# Register date filters
+# Register filters
 app.jinja_env.filters['date'] = viewer_modules.jinja_formatters.date
 app.jinja_env.filters['datetime'] = viewer_modules.jinja_formatters.datetime
+app.jinja_env.filters['markdown_discord'] = viewer_modules.jinja_formatters.markdown_discord
 app.config["SECRET_KEY"] = 'boop'
 
 def process_messages(message_cls, attachment_cls, edit_cls, delete_cls, channel_id, date):
@@ -144,6 +147,9 @@ def show_single_user(user_id):
     members = db_session.query(db.GuildMember).filter_by(user_id=user_id).all()
     return render_template("user_details.html", user=user, members=members)
 
+@app.route('/users/<user_id>/<guild_id>')
+def show_single_member(user_id, guild_id):
+    return render_template("user_guild_history.html")
 
 @app.route('/channels/<channel_id>/')
 def list_all_logged_days_for_channel(channel_id):
