@@ -8,7 +8,7 @@
     - [x] Log edits to messages
     - [x] Log pins in channel
    - [ ] Log channel changes
-   - [ ] Log guild changes
+   - [x] Log guild changes
    - [ ] Log role changes
    - [x] Log user updates
      - [x] Log role additions

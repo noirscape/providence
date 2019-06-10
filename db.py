@@ -113,6 +113,7 @@ class GuildEdit(Base):
     owner_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     owner = relationship(User)
     edit_time = Column(DateTime, nullable=False)
+    icon_url = Column(String(MAX_URL_LENGTH))
 
 
 class GuildMemberEdit(Base):

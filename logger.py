@@ -105,6 +105,12 @@ async def on_member_update(before, after):
 
 
 @client.event
+async def on_guild_update(before, after):
+    if before.name != after.name or before.owner.id != after.owner.id or before.icon_url != after.icon_url:
+        operations.update_guild(before, after)
+
+
+@client.event
 async def on_ready():
     print("Ready to log messages!")
 

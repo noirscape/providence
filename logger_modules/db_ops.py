@@ -445,3 +445,47 @@ class DatabaseOperations:
 
         session.commit()
         session.close()
+
+    def update_guild(self, before: discord.Guild, after: discord.Guild):
+        session = self.session_manager()
+
+        if not session.query(exists().where(db.Guild.id == before.id)).scalar():
+            self.create_guild(before)
+            session.commit()
+
+        guild_model = session.query(db.Guild).filter_by(id=before.id).one()
+
+        changes = False
+        old_name = None
+        old_owner = guild_model.owner_id
+        old_icon = None
+
+        if before.name != after.name:
+            old_name = before.name
+            guild_model.name = after.name
+            LOGGER.info("Guild ID:%s:Name changed from %s to %s", before.id, before.name, after.name)
+            changes = True
+        if before.owner.id != after.owner.id:
+            old_owner = before.owner.id
+            guild_model.owner_id = after.owner.id
+            LOGGER.info("Guild ID:%s:Owner changed from %s to %s", before.id, before.owner.name, after.owner.name)
+            changes = True
+        if before.icon_url != after.icon_url:
+            old_icon = before.icon_url
+            guild_model.icon_url = after.icon_url
+            LOGGER.info("Guild ID:%s:Icon URL changed from %s to %s", before.id, before.icon_url, after.icon_url)
+            changes = True
+
+        if changes:
+            new_guild_edit = db.GuildEdit(
+                guild_id=guild_model.id,
+                name=old_name,
+                owner_id=old_owner,
+                edit_time=datetime.datetime.now(),
+                icon_url=old_icon
+            )
+            session.add(new_guild_edit)
+
+        session.merge(guild_model)
+        session.commit()
+        session.close()
