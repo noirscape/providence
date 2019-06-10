@@ -111,6 +111,12 @@ async def on_guild_update(before, after):
 
 
 @client.event
+async def on_guild_role_update(before, after):
+    if before.name != after.name:
+        operations.update_guild(before, after)
+
+
+@client.event
 async def on_ready():
     print("Ready to log messages!")
 
