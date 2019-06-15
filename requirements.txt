@@ -8,3 +8,4 @@ pyyaml
 requests
 flask-wtf
 Flask-Misaka
+click
