@@ -137,3 +137,6 @@ static/avatars
 
 # Logs
 providence_existing.log
+
+# VS Code
+.vscode

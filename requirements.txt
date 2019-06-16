@@ -9,3 +9,5 @@ requests
 flask-wtf
 Flask-Misaka
 click
+Flask-Breadcrumbs
+Frozen-Flask

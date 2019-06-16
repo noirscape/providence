@@ -16,6 +16,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 import db
 from logger_modules.existing_log import ExistingArchiveHandler
 from logger_modules.existing_db_ops import ExistingDatabaseOperations
+import logger_modules.init_funcs
 
 @click.command()
 @click.argument("ID", type=int)
@@ -29,6 +30,7 @@ def main(id, log_type):
     with open("config.yml", "r") as configfile:
         config = yaml.safe_load(configfile)
 
+    logger_modules.init_funcs.make_static_dirs(config)
     engine = create_engine(config["database_url"], pool_size=30)
     LOGGER.info("Connected to database.")
     db.Base.metadata.bind = engine

@@ -1,4 +1,0 @@
-{
-    "python.pythonPath": "venv/bin/python",
-    "python.linting.pylintArgs": ["--load-plugins", "pylint_flask", "--max-line-length=500"]
-}

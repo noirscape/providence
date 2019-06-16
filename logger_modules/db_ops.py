@@ -69,7 +69,7 @@ class DatabaseOperations:
                 r = requests.get(str(attachment.url))
                 with open(f"static/attachments/{attachment.id}-{attachment.filename}", 'wb') as attachmentfile:
                     attachmentfile.write(r.content)
-                attachment_url = f"/static/attachments/{attachment.id}-{attachment.filename}.png"
+                attachment_url = f"/static/attachments/{attachment.id}-{attachment.filename}"
             else:
                 attachment_url = str(attachment.url)
             new_attachment = db.PrivateMessageAttachments(attachment_id=attachment.id, message_id=message.id,

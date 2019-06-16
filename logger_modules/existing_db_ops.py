@@ -36,8 +36,9 @@ class ExistingDatabaseOperations:
         self.create_text_channel_if_not_exist(channel)
 
         # Stage 2: Go over messages with create_message_if_not_exist
-        async for message in channel.history(limit=None):
-            self.create_message_if_not_exist(message, False)
+        if channel.permissions_for(channel.guild.me).read_message_history and channel.permissions_for(channel.guild.me).read_messages:
+            async for message in channel.history(limit=None):
+                self.create_message_if_not_exist(message, False)
 
     async def store_dm_channel(self, user: discord.User):
         # Stage 1: Create user
@@ -145,7 +146,7 @@ class ExistingDatabaseOperations:
         msg_embed = embed.get_rich_embed(message)
         if message.edited_at:
             with session_scope(self.sessionmaker) as session:
-                edited_exists = session.query(exists().where((msg_edit.content == message.content) & (msg_edit.message_id == message.id))).scalar()
+                edited_exists = session.query(exists().where((msg_edit.content == message.clean_content) & (msg_edit.message_id == message.id))).scalar()
                 LOGGER.info("Message with ID %s stored edit message status: %s", message.id, edited_exists)
         else:
             edited_exists = True
@@ -178,7 +179,7 @@ class ExistingDatabaseOperations:
         if not edited_exists:
             with session_scope(self.sessionmaker) as session:
                 LOGGER.info("Message with ID %s a dummy edit.", message.id)
-                session.add(msg_edit(message_id=message.id, content=message.content, embed=msg_embed,
+                session.add(msg_edit(message_id=message.id, content=message.clean_content, embed=msg_embed,
                                                     edit_time=message.edited_at))
 
     def create_attachment_if_not_exist(self, attachment: discord.Attachment, is_dm: bool, message_id: int):
@@ -196,7 +197,7 @@ class ExistingDatabaseOperations:
                     r = requests.get(str(attachment.url))
                     with open(f"static/attachments/{attachment.id}-{attachment.filename}", 'wb') as attachmentfile:
                         attachmentfile.write(r.content)
-                    attachment_url = f"/static/attachments/{attachment.id}-{attachment.filename}.png"
+                    attachment_url = f"/static/attachments/{attachment.id}-{attachment.filename}"
                 else:
                     LOGGER.info("Not downloading attachment with ID %s", attachment.id)
                     attachment_url = str(attachment.url)
