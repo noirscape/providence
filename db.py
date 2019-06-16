@@ -23,6 +23,7 @@ class User(Base):
     avatar = Column(String(MAX_URL_LENGTH))
     created_at = Column(DateTime, nullable=False)
     last_updated = Column(DateTime, nullable=False)
+    localized_avatar = Column(Boolean, nullable=False)
 
 
 class Guild(Base):
@@ -30,6 +31,7 @@ class Guild(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=False)
     name = Column(String(MAX_NAME_LENGTH), nullable=False)
     icon_url = Column(String(MAX_URL_LENGTH))
+    localized_url = Column(Boolean, nullable=False)
     owner_id = Column(BigInteger, ForeignKey("users.id"), nullable=False)
     owner = relationship(User)
     created_at = Column(DateTime, nullable=False)
@@ -114,6 +116,7 @@ class GuildEdit(Base):
     owner = relationship(User)
     edit_time = Column(DateTime, nullable=False)
     icon_url = Column(String(MAX_URL_LENGTH))
+    localized_url = Column(Boolean, nullable=False)
 
 
 class GuildMemberEdit(Base):
@@ -141,6 +144,7 @@ class GuildMessageAttachments(Base):
     filename = Column(String(MAX_FILENAME_LENGTH), nullable=False)
     url = Column(String(MAX_URL_LENGTH))
     filesize = Column(BigInteger)
+    localized_url = Column(Boolean, nullable=False)
 
 
 class GuildMessageDeletion(Base):
@@ -199,6 +203,7 @@ class PrivateMessageAttachments(Base):
     filename = Column(String(MAX_FILENAME_LENGTH), nullable=False)
     url = Column(String(MAX_URL_LENGTH))
     filesize = Column(BigInteger)
+    localized_url = Column(Boolean, nullable=False)
 
 
 class PrivateMessageDeletion(Base):
@@ -247,6 +252,7 @@ class UserEdit(Base):
     discriminator = Column(BigInteger, nullable=False)
     avatar = Column(String(MAX_URL_LENGTH), nullable=False)
     edit_time = Column(DateTime, nullable=False)
+    localized_avatar = Column(Boolean, nullable=False)
 
 
 class BanAudit(Base):
