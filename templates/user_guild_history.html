@@ -15,8 +15,10 @@
     </thead>
     <tbody>
         {% for audit in join_leave_audits %}
-        <td>{% if audit.member_joined %}Joined{% else %}Left{% endif %}</td>
-        <td>{{ audit.event_at | datetime }}</td>
+        <tr>
+            <td>{% if audit.member_joined %}Joined{% else %}Left{% endif %}</td>
+            <td>{{ audit.event_at | datetime }}</td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
@@ -32,16 +34,35 @@
     </thead>
     <tbody>
         {% for audit in ban_audits %}
-        <td>{% if audit.member_was_banned %}Banned{% else %}Unbanned{% endif %}</td>
-        <td>{{ audit.event_at | datetime }}</td>
+        <tr>
+            <td>{% if audit.member_was_banned %}Banned{% else %}Unbanned{% endif %}</td>
+            <td>{{ audit.event_at | datetime }}</td>
+        <tr/>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if roles_audit or current_roles %}
+<h4>Roles</h4>
+{% if current_roles %}
+<h5>Current roles</h5>
+<table class="u-full-width">
+    <thead>
+        <th>Role name</th>
+    </thead>
+    <tbody>
+        {% for role in current_roles %}
+        <tr>
+        <td><a href="/roles/{{ role.role_id }}">{{ role.role.name }}</a></td>
+        </tr>
         {% endfor %}
     </tbody>
 </table>
 {% endif %}
 
 {% if roles_audit %}
-<h4>Roles</h4>
-
+<h5>Audited roles</h5>
 <table class="u-full-width">
         <thead>
             <th>Added/Removed</th>
@@ -50,11 +71,14 @@
         </thead>
         <tbody>
             {% for audit in roles_audit %}
-            <td>{% if audit.role_was_added %}Added{% else %}Removed{% endif %}</td>
-            <td><a href="/roles/{{ audit.role.id }}">{{ audit.role.name }}</a></td>
-            <td>{{ audit.event_at | datetime }}</td>
+            <tr>
+                <td>{% if audit.role_was_added %}Added{% else %}Removed{% endif %}</td>
+                <td><a href="/roles/{{ audit.role.id }}">{{ audit.role.name }}</a></td>
+                <td>{{ audit.event_at | datetime }}</td>
+            </tr>
             {% endfor %}
         </tbody>
 </table>
+{% endif %}
 {% endif %}
 {% endblock %}

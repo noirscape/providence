@@ -430,6 +430,8 @@ class DatabaseOperations:
         member_model = session.query(db.GuildMember).filter_by(user_id=before.id, guild_id=before.guild.id).one()
 
         for role in added_roles:
+            list_change = db.GuildMemberRoles(member_id=member_model.id, role_id=role.id)
+            session.delete(list_change)
             role_add = db.RoleAudit(member_id=member_model.id,
                                     role_id=role.id,
                                     role_was_added=True,
@@ -437,6 +439,8 @@ class DatabaseOperations:
             session.add(role_add)
 
         for role in removed_roles:
+            list_change = db.GuildMemberRoles(member_id=member_model.id, role_id=role.id)
+            session.delete(list_change)
             role_remove = db.RoleAudit(member_id=member_model.id,
                                        role_id=role.id,
                                        role_was_added=False,

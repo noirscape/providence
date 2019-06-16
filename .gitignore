@@ -134,3 +134,6 @@ config.yml
 # Static stuff
 static/attachments
 static/avatars
+
+# Logs
+providence_existing.log

@@ -155,11 +155,13 @@ def show_single_member(user_id, guild_id):
     join_leave_audits = db_session.query(db.JoinLeaveAudit).filter_by(guild_id=guild.id, member_id=member.id).all()
     ban_audits = db_session.query(db.BanAudit).filter_by(member_id=member.id).all()
     roles_audit = db_session.query(db.RoleAudit).filter_by(member_id=member.id).all()
-    return render_template("user_guild_history.html", guild=guild, join_leave_audits=join_leave_audits, ban_audits=ban_audits, roles_audit=roles_audit)
+    current_roles = db_session.query(db.GuildMemberRoles).filter_by(member_id=member.id).all()
+    return render_template("user_guild_history.html", guild=guild, join_leave_audits=join_leave_audits, ban_audits=ban_audits, roles_audit=roles_audit, current_roles=current_roles)
 
 @app.route('/channels/<channel_id>/')
 def list_all_logged_days_for_channel(channel_id):
     channel, days = request_days(db.GuildMessage, channel_id)
+    days.sort()
 
     return render_template("days_list.html", channel=channel, days=days)
 

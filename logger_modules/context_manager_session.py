@@ -5,7 +5,7 @@ def session_scope(sessionmaker):
     session = sessionmaker()
     try:
         yield session
-        # session.commit()
+        session.commit()
     except:
         session.rollback()
         raise

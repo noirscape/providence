@@ -1,6 +1,12 @@
 import discord
 import yaml
+
 import logging
+import logging.config
+
+logging.basicConfig(level=logging.INFO)
+logging.config.dictConfig({'version': 1, 'disable_existing_loggers': True})
+LOGGER = logging.getLogger(__name__)
 
 import logger_modules.db_ops
 import logger_modules.embed
@@ -11,8 +17,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 import db
 import concurrent.futures
-
-logging.basicConfig(level=logging.WARN)
 
 print("Starting Providence...")
 
