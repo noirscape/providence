@@ -12,9 +12,9 @@
     <tbody>
         {% for channel in channels %}
         <tr>
-            <td><a href="/channels/{{ channel.id }}">#{{ channel.name }}</a></td>
+            <td><a href="{{ url_for('list_all_logged_days_for_channel', guild_id=channels[0].guild.id, channel_id=channel.id) }}">#{{ channel.name }}</a></td>
             <td>{{ channel.id }}</td>
-            <td><a href="/channels/{{ channel.id }}/info">More</a></td>
+            <td><a href="{{ url_for('list_channel_info', guild_id=channels[0].guild.id, channel_id=channel.id)}}">More</a></td>
         </tr>
         {% endfor %}
     </tbody>

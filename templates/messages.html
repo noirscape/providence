@@ -440,7 +440,7 @@ a {
             <div class="chatlog__messages">
                 <!-- Author and timestamp-->
                 <span class="chatlog__author-name" title="{{ message_group[0].author.name }}">
-                    <a href="/users/{{ message_group[0].author.id }}" style="color: white;">{{ message_group[0].author.name }}</a></span>
+                    <a href="{{ url_for('show_single_user', user_id=message_group[0].author.id) }}" style="color: white;">{{ message_group[0].author.name }}</a></span>
                 <span class="chatlog__timestamp">{{ message_group[0].created_at | datetime }}</span>
                 {% for message in message_group %}
 

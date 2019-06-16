@@ -59,14 +59,14 @@
         {% for result in results %}
         <tr>
             <td>{{ result.id }}</td>
-            <td><a href="/users/{{ result.author.id }}">{{ result.author.name }}#{{ '{0:04d}'.format(result.author.discriminator) }}</a></td>
+            <td><a href="{{ url_for('show_single_user', user_id=result.author.id) }}">{{ result.author.name }}#{{ '{0:04d}'.format(result.author.discriminator) }}</a></td>
             <td>{{ result.content }}</td>
             <td>{{ result.created_at | date }}</td>
             {% if result.channel.name %}
             <td>#{{ result.channel.name }} in {{ result.channel.guild.name }}</td>
-            <td><a href="/channels/{{ result.channel.id }}/{{ result.created_at | date }}">(link)</a></td>
+            <td><a href="{{ url_for('list_all_logged_days_for_channel', channel_id=result.channel.id, guild_id=result.channel.guild_id, date=result.created_at.strftime('%Y-%m-%d')) }}">(link)</a></td>
             {% else %}
-            <td>DM with <a href="/users/{{ result.channel.remote_user.id }}">{{ result.channel.remote_user.name }}#{{ '{0:04d}'.format(result.channel.remote_user.discriminator) }}</a></td>
+            <td>DM with <a href="{{ url_for('show_single_user', user_id=result.channel.remote_user.id) }}">{{ result.channel.remote_user.name }}#{{ '{0:04d}'.format(result.channel.remote_user.discriminator) }}</a></td>
             <td><a href="">(link)</a></td>
             {% endif %}
         </tr>

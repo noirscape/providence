@@ -18,7 +18,7 @@
             <td>{{ role.name }}</td>
             <td>{{ role.guild.name }}</td>
             <td>{{ role.total_members }}</td>
-            <td><a href="/roles/{{ role.id }}">(link)</a></td>
+            <td><a href="{{ url_for('show_role_info', role_id=role.id) }}">(link)</a></td>
         </tr>
         {% endfor %}
     </tbody>

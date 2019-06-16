@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ channel.remote_user.name }} Days list{% endblock %}
+
+{% block content %}
+{% if days %}
+<ul>
+    {% for day in days %}
+    <li><a href="{{ url_for('list_all_dms_per_day', dm_id=channel.id, date=day.strftime('%Y-%m-%d')) }}">{{ day | date }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

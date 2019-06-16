@@ -17,10 +17,10 @@
         {% for guild in guilds %}
         <tr>
             <td><img class="u-full-width u-max-full-width table-image" src="{{ guild.icon_url }}" /></td>
-            <td><a href="{{ guild.id }}">{{ guild.name }}</a></td>
-            <td><a href="/users/{{ guild.owner.id }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a></td>
+            <td><a href="{{ url_for('list_guild_channels', guild_id=guild.id) }}">{{ guild.name }}</a></td>
+            <td><a href="{{ url_for('show_single_user', user_id=guild.owner.id) }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a></td>
             <td>{{ guild.id }}</td>
-            <td><a href="{{ guild.id }}/info">More</a></td>
+            <td><a href="{{ url_for('show_single_guild', guild_id=guild.id) }}">More</a></td>
         </tr>
         {% endfor %}
     </tbody>

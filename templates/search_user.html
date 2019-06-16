@@ -39,7 +39,7 @@
         <tr>
             <td>{{ result.id }}</td>
             <td>{{ result.name }}#{{ '{0:04d}'.format(result.discriminator) }}</td>
-            <td><a href="/users/{{ result.id }}">(link)</a></td>
+            <td><a href="{{ url_for('show_single_user', user_id=result.id) }}">(link)</a></td>
         </tr>
         {% endfor %}
     </tbody>

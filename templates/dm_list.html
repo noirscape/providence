@@ -15,8 +15,8 @@
         {% for dm in dms %}
         <tr>
             <td><img class="u-full-width u-max-full-width table-image" src="{{ dm.remote_user.avatar }}" /></td>
-            <td><a href="{{ dm.id }}">{{ dm.remote_user.name }}#{{ '{0:04d}'.format(dm.remote_user.discriminator) }}</a></td>
-            <td><a href="/users/{{ dm.remote_user.id }}">User page</a></td>
+            <td><a href="{{ url_for('list_all_logged_days_for_dm', dm_id=dm.id) }}">{{ dm.remote_user.name }}#{{ '{0:04d}'.format(dm.remote_user.discriminator) }}</a></td>
+            <td><a href="{{ url_for('show_single_user', user_id=dm.remote_user.id) }}">User page</a></td>
         </tr>
         {% endfor %}
     </tbody>

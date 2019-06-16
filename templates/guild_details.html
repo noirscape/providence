@@ -12,7 +12,7 @@
         <div class="four columns">
             <p>ID: {{ guild.id }}<br>
             Name: {{ guild.name }}<br>
-            Owner: <a href="/users/{{ guild.owner.id }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a><br>
+            Owner: <a href="{{ url_for('show_single_user', user_id=guild.owner.id) }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a><br>
             Created at: {{ guild.created_at | date }} </p>
         </div>
     </div>    
@@ -30,8 +30,8 @@
     <tbody>
         {% for membership in members %}
         <tr>
-            <td><a href="/users/{{ membership.user.id }}">{{ membership.user.name }}#{{ '{0:04d}'.format(membership.user.discriminator) }}</a></td>
-            <td><a href="/users/{{ membership.user.id }}/{{ guild.id }}">More</a></td>
+            <td><a href="{{ url_for('show_single_user', user_id=membership.user.id) }}">{{ membership.user.name }}#{{ '{0:04d}'.format(membership.user.discriminator) }}</a></td>
+            <td><a href="{{ url_for('show_single_member', user_id=membership.user.id, guild_id=guild.id) }}">More</a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -53,7 +53,7 @@
             <td>{{ role.name }}</td>
             <td>{{ role.id }}</td>
             <td>{{ role.created_at | date }}</td>
-            <td><a href="/roles/{{ role.id }}">(link)</a></td>
+            <td><a href="{{ url_for('show_role_info', role_id=role.id) }}">(link)</a></td>
         </tr>
         {% endfor %}
     </tbody>

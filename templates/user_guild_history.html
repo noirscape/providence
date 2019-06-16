@@ -54,7 +54,7 @@
     <tbody>
         {% for role in current_roles %}
         <tr>
-        <td><a href="/roles/{{ role.role_id }}">{{ role.role.name }}</a></td>
+        <td><a href="{{ url_for('show_role_info', role_id=role.role.id) }}">{{ role.role.name }}</a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -73,7 +73,7 @@
             {% for audit in roles_audit %}
             <tr>
                 <td>{% if audit.role_was_added %}Added{% else %}Removed{% endif %}</td>
-                <td><a href="/roles/{{ audit.role.id }}">{{ audit.role.name }}</a></td>
+                <td><a href="{{ url_for('show_role_info', role_id=audit.role.id) }}">{{ audit.role.name }}</a></td>
                 <td>{{ audit.event_at | datetime }}</td>
             </tr>
             {% endfor %}

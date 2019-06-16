@@ -3,7 +3,7 @@
 {% block title %} Search types {% endblock %}
 {% block content %}
 <ul>
-    <li><a href="messages">Messages</a></li>
-    <li><a href="users">Users</a></li>
+    <li><a href="{{ url_for('message_search') }}">Messages</a></li>
+    <li><a href="{{ url_for('user_search') }}">Users</a></li>
 </ul>
 {% endblock %}

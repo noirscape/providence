@@ -40,6 +40,14 @@
     <div class="row">
       <div class="twelve columns" style="margin-top: 5%">
         <h2>Providence - {{ create_title() }}</h2>
+        {% if breadcrumbs %}
+          <div>
+          {%- for breadcrumb in breadcrumbs -%}
+              <a href="{{ breadcrumb.url }}">{{ breadcrumb.text }}</a>
+              {{ ' / ' if not loop.last }}
+          {%- endfor -%}
+          </div>
+        {% endif %}
         {% block content %}{% endblock %}
       </div>
     </div>

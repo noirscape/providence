@@ -28,8 +28,8 @@
         {% for membership in members %}
         <tr>
             <td><img class="u-full-width table-image" src="{{ membership.guild.icon_url }}" /></td>
-            <td><a href="/guilds/{{ membership.guild_id }}/">{{ membership.guild.name }}</a></td>
-            <td><a href="{{ membership.guild_id }}">Details</a></td>
+            <td><a href="{{ url_for('list_guild_channels', guild_id=membership.guild.id) }}">{{ membership.guild.name }}</a></td>
+            <td><a href="{{ url_for('show_single_member', user_id=user.id, guild_id=membership.guild_id) }}">Details</a></td>
         </tr>
         {% endfor %}
     </tbody>
