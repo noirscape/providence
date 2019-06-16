@@ -7,7 +7,7 @@
 
 <div class="row">
     <div class="three columns">
-        <img class="u-max-full-width" src="{{ user.avatar }}" />
+        <img class="u-max-full-width" src="{% if user.localized_avatar %}{{ url_for('static', filename=user.avatar) }}{% else %}{{ user.avatar }}{% endif %}" />
     </div>
     <div class="four columns">
         <p>ID: {{ user.id }}<br>
@@ -27,7 +27,7 @@
     <tbody>
         {% for membership in members %}
         <tr>
-            <td><img class="u-full-width table-image" src="{{ membership.guild.icon_url }}" /></td>
+            <td><img class="u-full-width table-image" src="{% if membership.guild.localized_url %}{{ url_for('static', filename=membership.guild.icon_url) }}{% else %}{{ membership.guild.icon_url }}{% endif %}" /></td>
             <td><a href="{{ url_for('list_guild_channels', guild_id=membership.guild.id) }}">{{ membership.guild.name }}</a></td>
             <td><a href="{{ url_for('show_single_member', user_id=user.id, guild_id=membership.guild_id) }}">Details</a></td>
         </tr>

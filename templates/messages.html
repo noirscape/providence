@@ -418,7 +418,7 @@ a {
     
 <div class="info">
     <div class="info__guild-icon-container">
-        <img class="info__guild-icon" src="{{ channel.guild.icon_url }}" />
+        <img class="info__guild-icon" src="{% if channel.guild.localized_url %}{{ url_for('static', filename=channel.guild.icon_url) }}{% else %}{{ channel.guild.icon_url }}{% endif %}" />
     </div>
     <div class="info__metadata">
         <div class="info__guild-name">{{ channel.guild.name }}</div>
@@ -434,7 +434,7 @@ a {
         <div class="chatlog__message-group">
             <!-- Avatar -->
             <div class="chatlog__author-avatar-container">
-                <img class="chatlog__author-avatar" src="{{ message_group[0].author.avatar }}" />
+                <img class="chatlog__author-avatar" src="{% if message_group[0].author.localized_avatar %}{{ url_for('static', filename=message_group[0].author.avatar) }}{% else %}{{ message_group[0].author.avatar }}{% endif %}" />
             </div>
             <!-- Messages in group -->
             <div class="chatlog__messages">
@@ -459,9 +459,9 @@ a {
                 <!-- Attachments -->
                 {% for attachment in message.attachments %}
                     <div class="chatlog__attachment">
-                        <a href="{{ attachment.url }}">
+                        <a href="{% if attachment.localized_url %}{{ url_for('static', filename=attachment.url) }}{% else %}{{ attachment.url }}{% endif %}">
                             {% if attachment.is_image %}
-                                <img class="chatlog__attachment-thumbnail" src="{{ attachment.url }}" />
+                                <img class="chatlog__attachment-thumbnail" src="{% if attachment.localized_url %}{{ url_for('static', filename=attachment.url) }}{% else %}{{ attachment.url }}{% endif %}" />
                             {% else %}
                                 Attachment: {{ attachment.filename }} ({{ attachment.filesize }})
                             {% endif %}

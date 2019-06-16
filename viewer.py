@@ -200,6 +200,7 @@ def list_all_dms():
 @app.route('/dms/<int:dm_id>/')
 def list_all_logged_days_for_dm(dm_id):
     days = request_days(db.PrivateMessage, dm_id)
+    days.sort()
     channel = db_session.query(db.DMChannel).filter_by(id=dm_id).one()
     return render_template("dm_days_list.html", channel=channel, days=days)
 

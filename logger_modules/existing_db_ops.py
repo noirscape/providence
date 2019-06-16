@@ -58,7 +58,7 @@ class ExistingDatabaseOperations:
             if not session.query(exists().where(db.Guild.id == guild.id)).scalar():
                 LOGGER.info("Storing new Guild: %s (%s)", guild.name, guild.id)
                 session.add(db.Guild(id=guild.id, name=guild.name, icon_url=str(guild.icon_url), owner_id=guild.owner_id,
-                                created_at=guild.created_at, last_updated=datetime.datetime.now())
+                                created_at=guild.created_at, last_updated=datetime.datetime.now(), localized_url=False)
                 )
 
                 # Stage 3: Create owner _MEMBER_
@@ -75,13 +75,15 @@ class ExistingDatabaseOperations:
                     r = requests.get(user.avatar_url_as(format='png'))
                     with open(f"static/avatars/{user.id}.png", 'wb') as avatarfile:
                         avatarfile.write(r.content)
-                    avatar_url = f"/static/avatars/{user.id}.png"
+                    avatar_url = f"avatars/{user.id}.png"
+                    localized = True
                 else:
                     LOGGER.info("Not downloading avatar for user: %s (%s)", str(user), user.id)
                     avatar_url = user.avatar_url_as(format='png')
+                    localized = False
                 LOGGER.info("Storing new user: %s (%s)", str(user), user.id)
                 session.add(db.User(id=user.id, name=user.name, discriminator=user.discriminator, is_bot=user.bot,
-                            avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now()
+                            avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now(), localized_avatar=localized
                 ))
 
     def create_member_if_not_exist(self, member: discord.Member, guild: discord.Guild):
@@ -197,14 +199,17 @@ class ExistingDatabaseOperations:
                     r = requests.get(str(attachment.url))
                     with open(f"static/attachments/{attachment.id}-{attachment.filename}", 'wb') as attachmentfile:
                         attachmentfile.write(r.content)
-                    attachment_url = f"/static/attachments/{attachment.id}-{attachment.filename}"
+                    attachment_url = f"attachments/{attachment.id}-{attachment.filename}"
+                    localized = True
                 else:
                     LOGGER.info("Not downloading attachment with ID %s", attachment.id)
                     attachment_url = str(attachment.url)
+                    localized = False
                 LOGGER.info("Storing attachment with ID %s", attachment.id)
                 new_attachment = msg_attach(attachment_id=attachment.id, message_id=message_id,
                                                                 filename=attachment.filename, url=attachment_url,
-                                                                filesize=attachment.size)
+                                                                filesize=attachment.size,
+                                                                localized_url=localized)
                 session.add(new_attachment)
 
     def create_role_if_not_exist(self, role: discord.Role):

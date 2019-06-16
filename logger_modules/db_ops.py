@@ -27,12 +27,14 @@ class DatabaseOperations:
             r = requests.get(user.avatar_url_as(format='png'))
             with open(f"static/avatars/{user.id}.png", 'wb') as avatarfile:
                 avatarfile.write(r.content)
-            avatar_url = f"/static/avatars/{user.id}.png"
+            avatar_url = f"avatars/{user.id}.png"
+            localized = True
         else:
             avatar_url = str(user.avatar_url)
+            localized = False
 
         new_user = db.User(id=user.id, name=user.name, discriminator=user.discriminator, is_bot=user.bot,
-                           avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now())
+                           avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now(), localized_avatar=localized)
         session.merge(new_user)
 
         session.commit()
@@ -69,12 +71,15 @@ class DatabaseOperations:
                 r = requests.get(str(attachment.url))
                 with open(f"static/attachments/{attachment.id}-{attachment.filename}", 'wb') as attachmentfile:
                     attachmentfile.write(r.content)
-                attachment_url = f"/static/attachments/{attachment.id}-{attachment.filename}"
+                attachment_url = f"attachments/{attachment.id}-{attachment.filename}"
+                localized = True
             else:
                 attachment_url = str(attachment.url)
+                localized = False
             new_attachment = db.PrivateMessageAttachments(attachment_id=attachment.id, message_id=message.id,
                                                           filename=attachment.filename, url=attachment_url,
-                                                          filesize=attachment.size)
+                                                          filesize=attachment.size,
+                                                          localized_url=localized)
             session.merge(new_attachment)
             session.commit()
         session.close()
@@ -197,7 +202,8 @@ class DatabaseOperations:
             self.create_user(guild.owner)
 
         new_guild = db.Guild(id=guild.id, name=guild.name, icon_url=str(guild.icon_url), owner_id=guild.owner_id,
-                             created_at=guild.created_at, last_updated=datetime.datetime.now())
+                             created_at=guild.created_at, last_updated=datetime.datetime.now(),
+                             localized=False)
 
         session.merge(new_guild)
 
@@ -259,12 +265,15 @@ class DatabaseOperations:
                 r = requests.get(str(attachment.url))
                 with open(f"static/attachments/{attachment.id}-{attachment.filename}", 'wb') as attachmentfile:
                     attachmentfile.write(r.content)
-                attachment_url = f"/static/attachments/{attachment.id}-{attachment.filename}"
+                attachment_url = f"attachments/{attachment.id}-{attachment.filename}"
+                localized = True
             else:
                 attachment_url = str(attachment.url)
+                localized = False
             new_attachment = db.GuildMessageAttachments(attachment_id=attachment.id, message_id=message.id,
                                                         filename=attachment.filename, url=attachment_url,
-                                                        filesize=attachment.size)
+                                                        filesize=attachment.size,
+                                                        localized_url=localized)
             session.merge(new_attachment)
             session.commit()
 
@@ -361,18 +370,22 @@ class DatabaseOperations:
                 r = requests.get(after.avatar_url_as(format='png'))
                 with open(f"static/avatars/{after.id}.png", 'wb') as avatarfile:
                     avatarfile.write(r.content)
-                new_avatar = f"/static/avatars/{after.id}.png"
+                new_avatar = f"avatars/{after.id}.png"
+                localized = True
             else:
                 new_avatar = str(after.avatar_url)
+                localized = False
         else:
             new_avatar = str(before.avatar_url)
+            localized = False
 
         # This probably could be done more efficient but fuck it, my mind needs to understand whats going on.
         old_user = db.UserEdit(user_id=user_model.id, 
                                name=user_model.name,
                                discriminator=user_model.discriminator,
                                avatar=user_model.avatar,
-                               edit_time=datetime.datetime.now())
+                               edit_time=datetime.datetime.now(),
+                               localized=localized)
 
         session.add(old_user)
         user_model.name = after.name
@@ -486,7 +499,8 @@ class DatabaseOperations:
                 name=old_name,
                 owner_id=old_owner,
                 edit_time=datetime.datetime.now(),
-                icon_url=old_icon
+                icon_url=old_icon,
+                localized_url=False
             )
             session.add(new_guild_edit)
 

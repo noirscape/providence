@@ -7,7 +7,7 @@
 <h3>{{ guild.name }}</h3>
 <div class="row">
         <div class="three columns">
-            <img class="u-max-full-width" src="{{ guild.icon_url }}" />
+            <img class="u-max-full-width" src="{{ url_for('static', filename=guild.icon_url) }}" />
         </div>
         <div class="four columns">
             <p>ID: {{ guild.id }}<br>
