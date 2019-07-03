@@ -27,7 +27,7 @@ config = context.config
 
 ## OVERRIDE URL
 with open('config.yml', 'r') as configfile:
-    override_config = yaml.load(configfile)
+    override_config = yaml.safe_load(configfile)
     config.set_main_option('sqlalchemy.url', override_config["database_url"])
 ##
 
