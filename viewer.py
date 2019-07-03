@@ -151,8 +151,13 @@ def show_single_guild(guild_id):
 @app.route('/users/')
 def show_users():
     page = request.args.get(get_page_parameter(), type=int, default=1)
+
+    # Stupidly easy but otherwise sqlalchemy will work weird
+    offset = page - 1
+    offset = offset * 10
+
     total_users = db_session.query(db.User).count()
-    users = db_session.query(db.User).order_by(db.User.name.asc()).limit(10).offset(page * 10)
+    users = db_session.query(db.User).order_by(db.User.name.asc()).limit(10).offset(offset)
     pagination = Pagination(page=page, total=total_users, record_name='users', css_framework='bootstrap3')
     return render_template("users_list.html", users=users, pagination=pagination)
 
