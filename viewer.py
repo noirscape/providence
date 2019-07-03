@@ -11,6 +11,7 @@ import viewer_modules.jinja_formatters
 import viewer_modules.forms as forms
 import viewer_modules.search
 import viewer_modules.session_filter as session_filter
+import viewer_modules.dynamic_crumbs as dynamic_crumbs
 from flask_breadcrumbs import Breadcrumbs, register_breadcrumb
 from flask_paginate import Pagination, get_page_parameter
 
@@ -132,20 +133,31 @@ def list_all_guilds():
     all_guilds = db_session.query(db.Guild).all()
     return render_template("guilds_list.html", guilds=all_guilds)
 
-@register_breadcrumb(app, '.guilds.guild_id', 'Individual guild')
+@register_breadcrumb(app, '.guilds.guild_id', 'Individual guild', dynamic_list_constructor=dynamic_crumbs.guild_id)
 @app.route('/guilds/<int:guild_id>/')
 def list_guild_channels(guild_id):
     channels = db_session.query(db.GuildChannel).filter_by(guild_id=guild_id).order_by(
         db.GuildChannel.created_at.asc()).all()
     return render_template("channel_list.html", channels=channels)
 
-@register_breadcrumb(app, '.guilds.id.info', 'Guild info')
+@register_breadcrumb(app, '.guilds.guild_id.info', 'Guild info')
 @app.route('/guilds/<int:guild_id>/info')
 def show_single_guild(guild_id):
     guild = db_session.query(db.Guild).filter_by(id=guild_id).one()
-    members = db_session.query(db.GuildMember).filter_by(guild_id=guild_id).all()
+
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+
+    # Stupidly easy but otherwise sqlalchemy will work weird
+    offset = page - 1
+    offset = offset * 10
+
+    total_members = db_session.query(db.GuildMember).filter_by(guild_id=guild_id).count()
+    members = db_session.query(db.GuildMember).filter_by(guild_id=guild_id).join(db.GuildMember.user).order_by(db.User.name.asc()).limit(10).offset(offset)
+    users = db_session.query(db.User).order_by(db.User.name.asc()).limit(10).offset(offset)
+    pagination = Pagination(page=page, total=total_members, record_name='members', css_framework='bootstrap3')
+
     roles = db_session.query(db.Role).filter_by(guild_id=guild_id).all()
-    return render_template("guild_details.html", guild=guild, members=members, roles=roles)
+    return render_template("guild_details.html", guild=guild, members=members, roles=roles, pagination=pagination)
 
 @register_breadcrumb(app, '.users', 'Users')
 @app.route('/users/')
@@ -162,14 +174,14 @@ def show_users():
     return render_template("users_list.html", users=users, pagination=pagination)
 
 
-@register_breadcrumb(app, '.users.id', 'User ID')
+@register_breadcrumb(app, '.users.id', 'User ID', dynamic_list_constructor=dynamic_crumbs.user_id)
 @app.route('/users/<int:user_id>/')
 def show_single_user(user_id):
     user = db_session.query(db.User).filter_by(id=user_id).one()
     members = db_session.query(db.GuildMember).filter_by(user_id=user_id).all()
     return render_template("user_details.html", user=user, members=members)
 
-@register_breadcrumb(app, '.users.id.guild_id', 'Membership info')
+@register_breadcrumb(app, '.users.id.guild_id', 'Membership info', dynamic_list_constructor=dynamic_crumbs.guild_id)
 @app.route('/users/<int:user_id>/<int:guild_id>')
 def show_single_member(user_id, guild_id):
     guild = db_session.query(db.Guild).filter_by(id=guild_id).one()
@@ -180,7 +192,7 @@ def show_single_member(user_id, guild_id):
     current_roles = db_session.query(db.GuildMemberRoles).filter_by(member_id=member.id).all()
     return render_template("user_guild_history.html", guild=guild, join_leave_audits=join_leave_audits, ban_audits=ban_audits, roles_audit=roles_audit, current_roles=current_roles)
 
-@register_breadcrumb(app, '.guilds.guild_id.channel_id', 'Channel days')
+@register_breadcrumb(app, '.guilds.guild_id.channel_id', 'Channel days', dynamic_list_constructor=dynamic_crumbs.guild_channel_id)
 @app.route('/guilds/<int:guild_id>/<int:channel_id>/')
 def list_all_logged_days_for_channel(guild_id, channel_id):
     days = request_days(db.GuildMessage, channel_id)
@@ -211,7 +223,7 @@ def list_all_dms():
     return render_template("dm_list.html", dms=all_dms)
 
 
-@register_breadcrumb(app, '.dms.id', 'Individual DM')
+@register_breadcrumb(app, '.dms.id', 'Individual DM', dynamic_list_constructor=dynamic_crumbs.dm_id)
 @app.route('/dms/<int:dm_id>/')
 def list_all_logged_days_for_dm(dm_id):
     days = request_days(db.PrivateMessage, dm_id)
