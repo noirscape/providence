@@ -30,7 +30,7 @@ class DatabaseOperations:
             avatar_url = f"avatars/{user.id}.png"
             localized = True
         else:
-            avatar_url = str(user.avatar_url)
+            avatar_url = user.avatar_url_as(format='png')
             localized = False
 
         new_user = db.User(id=user.id, name=user.name, discriminator=user.discriminator, is_bot=user.bot,
@@ -378,10 +378,10 @@ class DatabaseOperations:
                 new_avatar = f"avatars/{after.id}.png"
                 localized = True
             else:
-                new_avatar = str(after.avatar_url)
+                new_avatar = after.avatar_url_as(format='png')
                 localized = False
         else:
-            new_avatar = str(before.avatar_url)
+            new_avatar = before.avatar_url_as(format='png')
             localized = False
 
         # This probably could be done more efficient but fuck it, my mind needs to understand whats going on.
