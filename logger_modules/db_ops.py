@@ -186,10 +186,15 @@ class DatabaseOperations:
         new_member = db.GuildMember(user_id=user.id, guild_id=guild.id, nickname=nickname,
                                     last_updated=datetime.datetime.now())
         session.merge(new_member)
+        session.commit()
+
+        member_id = session.query(db.GuildMember).filter_by(user_id=user.id, guild_id=guild.id).one().id
 
         if hasattr(user, "roles"):
             for role in user.roles:
-                self.create_role(role)
+                if not session.query(exists().where(db.Role.id == role.id)).scalar():
+                    self.create_role(role)
+                session.merge(db.GuildMemberRoles(member_id=member_id, role_id=role.id))
 
         session.commit()
         session.close()
@@ -433,18 +438,19 @@ class DatabaseOperations:
             if not session.query(exists().where(db.Role.id == role.id)).scalar():
                 self.create_role(role)
 
-        if added_roles or after.id == 126747960972279808:
+        if added_roles or after.id:
             LOGGER.info("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
             LOGGER.info("added roles: %s", added_roles)
-        if removed_roles or after.id == 126747960972279808:
+        if removed_roles or after.id:
             LOGGER.info("User ID: %s\nGuild ID: %s", before.id, before.guild.id)
-            LOGGER.info("removed roles: %s", added_roles)
+            LOGGER.info("removed roles: %s", removed_roles)
 
         member_model = session.query(db.GuildMember).filter_by(user_id=before.id, guild_id=before.guild.id).one()
 
         for role in added_roles:
-            list_change = db.GuildMemberRoles(member_id=member_model.id, role_id=role.id)
-            session.delete(list_change)
+            if session.query(exists().where(and_((db.GuildMemberRoles.member_id == member_model.id), (db.GuildMemberRoles.role_id == role.id)))).scalar():
+                list_change = db.GuildMemberRoles(member_id=member_model.id, role_id=role.id)
+                session.add(list_change)
             role_add = db.RoleAudit(member_id=member_model.id,
                                     role_id=role.id,
                                     role_was_added=True,
@@ -452,8 +458,9 @@ class DatabaseOperations:
             session.add(role_add)
 
         for role in removed_roles:
-            list_change = db.GuildMemberRoles(member_id=member_model.id, role_id=role.id)
-            session.delete(list_change)
+            if session.query(exists().where(and_((db.GuildMemberRoles.member_id == member_model.id), (db.GuildMemberRoles.role_id == role.id)))).scalar():
+                list_change = session.query(db.GuildMemberRoles).filter_by(member_id=member_model.id, role_id=role.id).one()
+                session.delete(list_change)
             role_remove = db.RoleAudit(member_id=member_model.id,
                                        role_id=role.id,
                                        role_was_added=False,
