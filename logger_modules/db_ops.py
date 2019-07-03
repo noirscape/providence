@@ -541,6 +541,10 @@ class DatabaseOperations:
     def update_guild_channel(self, before: discord.TextChannel, after: discord.TextChannel):
         session = self.session_manager()
 
+        # Just in case we don't even have the channel in the database, we don't have to register an update to it.
+        if not session.query(exists().where(db.GuildChannel.id == before.id)).scalar():
+            return self.create_guild_channel(after)
+
         channel_model = session.query(db.GuildChannel).filter_by(id=before.id).one()
 
         changes = False
