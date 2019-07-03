@@ -16,7 +16,6 @@
     <tbody>
         {% for guild in guilds %}
         <tr>
-            <td><img class="u-full-width u-max-full-width table-image" src="" /></td>
             <td><img class="u-full-width u-max-full-width table-image" src="{% if guild.localized_url %}{{ url_for('static', filename=guild.icon_url) }}{% else %}{{ guild.icon_url }}{% endif %}" /></td>
             <td><a href="{{ url_for('list_guild_channels', guild_id=guild.id) }}">{{ guild.name }}</a></td>
             <td><a href="{{ url_for('show_single_user', user_id=guild.owner.id) }}">{{ guild.owner.name }}#{{ '{0:04d}'.format(guild.owner.discriminator) }}</a></td>
