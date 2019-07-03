@@ -11,3 +11,4 @@ Flask-Misaka
 click
 Flask-Breadcrumbs
 Frozen-Flask
+flask-paginate
