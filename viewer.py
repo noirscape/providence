@@ -146,6 +146,12 @@ def show_single_guild(guild_id):
     roles = db_session.query(db.Role).filter_by(guild_id=guild_id).all()
     return render_template("guild_details.html", guild=guild, members=members, roles=roles)
 
+@register_breadcrumb(app, '.users', 'Users')
+@app.route('/users/')
+def show_users():
+    users = db_session.query(db.User)
+    return render_template("users_list.html", users=users)
+
 
 @register_breadcrumb(app, '.users.id', 'User ID')
 @app.route('/users/<int:user_id>/')
