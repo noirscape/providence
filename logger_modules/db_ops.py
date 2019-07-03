@@ -203,7 +203,7 @@ class DatabaseOperations:
 
         new_guild = db.Guild(id=guild.id, name=guild.name, icon_url=str(guild.icon_url), owner_id=guild.owner_id,
                              created_at=guild.created_at, last_updated=datetime.datetime.now(),
-                             localized=False)
+                             localized_url=False)
 
         session.merge(new_guild)
 
@@ -385,7 +385,7 @@ class DatabaseOperations:
                                discriminator=user_model.discriminator,
                                avatar=user_model.avatar,
                                edit_time=datetime.datetime.now(),
-                               localized=localized)
+                               localized_avatar=localized)
 
         session.add(old_user)
         user_model.name = after.name
