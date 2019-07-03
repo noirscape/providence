@@ -12,6 +12,7 @@ import viewer_modules.forms as forms
 import viewer_modules.search
 import viewer_modules.session_filter as session_filter
 from flask_breadcrumbs import Breadcrumbs, register_breadcrumb
+from flask_paginate import Pagination, get_page_parameter
 
 app = Flask(__name__)
 
@@ -149,8 +150,11 @@ def show_single_guild(guild_id):
 @register_breadcrumb(app, '.users', 'Users')
 @app.route('/users/')
 def show_users():
-    users = db_session.query(db.User)
-    return render_template("users_list.html", users=users)
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    total_users = db_session.query(db.User).count()
+    users = db_session.query(db.User).order_by(db.User.name.asc()).limit(10).offset(page * 10)
+    pagination = Pagination(page=page, total=total_users, record_name='users', css_framework='bootstrap3')
+    return render_template("users_list.html", users=users, pagination=pagination)
 
 
 @register_breadcrumb(app, '.users.id', 'User ID')

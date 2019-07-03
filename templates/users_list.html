@@ -4,10 +4,26 @@
 
 {% block content %}
 {% if users %}
-<ul>
-    {% for user in users %}
-    <li>{{ user.name }}</li>
-    {% endfor %}
-</ul>
+{{ pagination.info }}
+{{ pagination.links }}
+<table class="u-full-width">
+    <thead>
+        <tr>
+            <th>Avatar</th>
+            <th>User</th>
+            <th>#</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td><img class="u-full-width u-max-full-width table-image" src="{% if user.localized_avatar %}{{ url_for('static', filename=user.avatar) }}{% else %}{{ user.avatar }}{% endif %}" /></td>
+            <td>{{ user.name }}#{{ '{0:04d}'.format(user.discriminator) }}</td>
+            <td><a href="{{ url_for('show_single_user', user_id=user.id) }}">Details</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{{ pagination.links }}
 {% endif %}
 {% endblock %}
