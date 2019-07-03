@@ -30,11 +30,11 @@ class DatabaseOperations:
             avatar_url = f"avatars/{user.id}.png"
             localized = True
         else:
-            avatar_url = user.avatar_url_as(format='png')
+            avatar_url = user.avatar_url
             localized = False
 
         new_user = db.User(id=user.id, name=user.name, discriminator=user.discriminator, is_bot=user.bot,
-                           avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now(), localized_avatar=localized)
+                           avatar=str(avatar_url), created_at=user.created_at, last_updated=datetime.datetime.now(), localized_avatar=localized)
         session.merge(new_user)
 
         session.commit()
@@ -395,7 +395,7 @@ class DatabaseOperations:
         session.add(old_user)
         user_model.name = after.name
         user_model.discriminator = after.discriminator
-        user_model.avatar = new_avatar
+        user_model.avatar = str(new_avatar)
         session.merge(user_model)
 
         session.commit()

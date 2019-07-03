@@ -83,7 +83,7 @@ class ExistingDatabaseOperations:
                     localized = False
                 LOGGER.info("Storing new user: %s (%s)", str(user), user.id)
                 session.add(db.User(id=user.id, name=user.name, discriminator=user.discriminator, is_bot=user.bot,
-                            avatar=avatar_url, created_at=user.created_at, last_updated=datetime.datetime.now(), localized_avatar=localized
+                            avatar=str(avatar_url), created_at=user.created_at, last_updated=datetime.datetime.now(), localized_avatar=localized
                 ))
 
     def create_member_if_not_exist(self, member: discord.Member, guild: discord.Guild):
