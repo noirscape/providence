@@ -506,7 +506,7 @@ class DatabaseOperations:
                 name=old_name,
                 owner_id=old_owner,
                 edit_time=datetime.datetime.now(),
-                icon_url=old_icon,
+                icon_url=str(old_icon),
                 localized_url=False
             )
             session.add(new_guild_edit)
