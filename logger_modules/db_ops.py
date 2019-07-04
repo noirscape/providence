@@ -450,7 +450,7 @@ class DatabaseOperations:
         for role in added_roles:
             if session.query(exists().where(and_((db.GuildMemberRoles.member_id == member_model.id), (db.GuildMemberRoles.role_id == role.id)))).scalar():
                 list_change = db.GuildMemberRoles(member_id=member_model.id, role_id=role.id)
-                session.add(list_change)
+                session.merge(list_change)
             role_add = db.RoleAudit(member_id=member_model.id,
                                     role_id=role.id,
                                     role_was_added=True,
