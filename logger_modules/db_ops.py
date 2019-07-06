@@ -74,10 +74,10 @@ class DatabaseOperations:
                 attachment_url = f"attachments/{attachment.id}-{attachment.filename}"
                 localized = True
             else:
-                attachment_url = str(attachment.url)
+                attachment_url = attachment.url
                 localized = False
             new_attachment = db.PrivateMessageAttachments(attachment_id=attachment.id, message_id=message.id,
-                                                          filename=attachment.filename, url=attachment_url,
+                                                          filename=attachment.filename, url=str(attachment_url),
                                                           filesize=attachment.size,
                                                           localized_url=localized)
             session.merge(new_attachment)
@@ -273,10 +273,10 @@ class DatabaseOperations:
                 attachment_url = f"attachments/{attachment.id}-{attachment.filename}"
                 localized = True
             else:
-                attachment_url = str(attachment.url)
+                attachment_url = attachment.url
                 localized = False
             new_attachment = db.GuildMessageAttachments(attachment_id=attachment.id, message_id=message.id,
-                                                        filename=attachment.filename, url=attachment_url,
+                                                        filename=attachment.filename, url=str(attachment_url),
                                                         filesize=attachment.size,
                                                         localized_url=localized)
             session.merge(new_attachment)
@@ -496,7 +496,7 @@ class DatabaseOperations:
             changes = True
         if before.icon_url != after.icon_url:
             old_icon = before.icon_url
-            guild_model.icon_url = after.icon_url
+            guild_model.icon_url = str(after.icon_url)
             LOGGER.info("Guild ID:%s:Icon URL changed from %s to %s", before.id, before.icon_url, after.icon_url)
             changes = True
 
