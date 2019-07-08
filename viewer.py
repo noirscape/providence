@@ -24,10 +24,8 @@ Breadcrumbs(app=app)
 with open("config.yml") as configfile:
     config = yaml.safe_load(configfile)
 
-print("Read config.")
-
 engine = create_engine(config["database_url"])
-print("Connected to database.")
+
 db.Base.metadata.bind = engine
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
