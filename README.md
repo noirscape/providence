@@ -1,3 +1,7 @@
+## DEPRECATION NOTICE
+
+This program is now deprecated. I have other ideas on how to log this information. More to come in the future.
+
 ## Providence
 
 The discord logger for paranoid people.
